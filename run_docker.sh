@@ -2,8 +2,12 @@
 
 #last update: 31.07.2017
 
+OUTFOLDER='results-'$(date '+%Y%m%d-%H%M%S')
+
 LOC_CONFIG='/home/cise/yomo-astream/config'
-LOC_RESULT='/home/cise/yomo-astream/results'
+LOC_RESULT='/home/cise/yomo-astream/results/'$OUTFOLDER
+
+echo $LOC_RESULT
 
 ###FUNCTION DECLARATIONS###
 
@@ -22,7 +26,7 @@ function func_pullYoMo {
 function func_runYoMo {
   echo 'DBG: running YoMo container'
   sleep 1
-  docker run --net=host -it --rm -v /pwd/results:/monroe/results mobiqoe/yomo_docker
+  docker run --net=host -it --rm -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
 }
 
 function func_pullAStream {
@@ -38,19 +42,19 @@ function func_runAStream {
 }
 
 function func_runAStream_basic {
-  echo 'DBG: running AStream container'
+  echo 'DBG: running AStream container (BASIC)'
   sleep 1
   docker run --net=host -it --rm -v $LOC_CONFIG/astream-basic.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_sara {
-  echo 'DBG: running AStream container'
+  echo 'DBG: running AStream container (SARA)'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_COFIG/astream-sara.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --net=host -it --rm -v $LOC_CONFIG/astream-sara.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_netflix {
-  echo 'DBG: running AStream container'
+  echo 'DBG: running AStream container (NETFLIX)'
   sleep 1
   docker run --net=host -it --rm -v $LOC_CONFIG/astream-netflix.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
@@ -60,18 +64,30 @@ function func_runRandomOrder {
   echo 'DBG: test order:' $entries
   for entry in ${entries[@]}; do
     if [ $entry -eq 1 ]; then
+      echo ''
+      echo '*** AStream (BASIC) ***'
+      echo ''
       func_runAStream_basic
       sleep 1; fi
 
       if [ $entry -eq 2 ]; then
+        echo ''
+        echo '*** AStream (SARA) ***'
+        echo ''
         func_runAStream_sara
         sleep 1; fi
 
         if [ $entry -eq 3 ]; then
+          echo ''
+          echo '*** AStream (NETFLIX) ***'
+          echo ''
           func_runAStream_netflix
           sleep 1; fi
 
           if [ $entry -eq 4 ]; then
+            echo ''
+            echo '*** YoMo ***'
+            echo ''
             func_runYoMo
             sleep 1; fi
           done
