@@ -2,13 +2,6 @@
 
 #last update: 31.07.2017
 
-OUTFOLDER='results-'$(date '+%Y%m%d-%H%M%S')
-
-LOC_CONFIG='/home/cise/yomo-astream/config'
-LOC_RESULT='/home/cise/yomo-astream/results/'$OUTFOLDER
-
-echo $LOC_RESULT
-
 ###FUNCTION DECLARATIONS###
 
 function func_stopMONROEprocesses {
@@ -113,27 +106,34 @@ function func_test {
 
 ###ACTIONS###
 
-#echo '----------DBG: starting script----------'
-#echo "Enter number of batches:"
-#read input1
+echo '----------DBG: starting script----------'
+echo "Enter number of batches:"
+read input1
 
-#for i in `seq 1 $input1`;
-#do
-#echo ''
-#echo '----------DBG: running measurement batch $i----------'
-#func_stopMONROEprocesses
-#func_stopMONROEprocesses
-#func_pullAStream
-#func_pullYoMo
-#	func_runRandomOrder
-#	#func_runNonRandomOrder
-#	sleep 1800
-#done
+for i in `seq 1 $input1`;
+do
+echo ''
+echo '----------DBG: running measurement batch '$i'----------'
+
+OUTFOLDER='results-'$(date '+%Y%m%d-%H%M%S')
+LOC_CONFIG='/home/cise/yomo-astream/config'
+LOC_RESULT='/home/cise/yomo-astream/results/'$OUTFOLDER
+echo 'DBG: results folder: '$LOC_RESULT
+echo ''
 
 func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
 func_runRandomOrder
+#	#func_runNonRandomOrder
+sleep 1800
+done
+
+#func_stopMONROEprocesses
+#func_stopMONROEprocesses
+#func_pullAStream
+#func_pullYoMo
+#func_runRandomOrder
 
 ###END Of SCRIPT##
