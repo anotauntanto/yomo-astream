@@ -3,8 +3,13 @@
 
 # Author: Andra Lutu (based on a template from Jonas Karlsson)
 # Date: October 2016
+
+# Updates: Cise Midoglu, 31.07.2017
+
 # License: GNU General Public License v3
 # Developed for use by the EU H2020 MONROE project
+
+
 
 """
 Simple experiment template to collect metdata and run an experiment.
