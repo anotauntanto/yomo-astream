@@ -116,8 +116,8 @@ echo ''
 echo '----------DBG: running measurement batch '$i'----------'
 
 OUTFOLDER='results-'$(date '+%Y%m%d-%H%M%S')
-LOC_CONFIG='/home/cise/yomo-astream/config'
-LOC_RESULT='/home/cise/yomo-astream/results/'$OUTFOLDER
+LOC_CONFIG='/home/monroeSA/yomo-astream/config'
+LOC_RESULT='/home/monroeSA/yomo-astream/results/'$OUTFOLDER
 echo 'DBG: results folder: '$LOC_RESULT
 echo ''
 
@@ -127,6 +127,7 @@ func_pullAStream
 func_pullYoMo
 func_runRandomOrder
 #	#func_runNonRandomOrder
+echo 'DBG: Sleeping for 30min'
 sleep 1800
 done
 
