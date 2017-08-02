@@ -19,7 +19,7 @@ function func_pullYoMo {
 function func_runYoMo {
   echo 'DBG: running YoMo container'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
+  docker run --net=host -it --rm -v $LOC_CONFIG/yomo-example.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
 }
 
 function func_pullAStream {
