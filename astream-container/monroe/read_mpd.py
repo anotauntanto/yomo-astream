@@ -72,7 +72,7 @@ class MediaObject(object):
 
 
 class DashPlayback:
-    """ 
+    """
     Audio[bandwidth] : {duration, url_list}
     Video[bandwidth] : {duration, url_list}
     """
@@ -144,12 +144,12 @@ def read_mpd(mpd_file, dashplayback):
                 for representation in adaptation_set:
                     bandwidth = int(representation.attrib['bandwidth'])
                     # AEL -- add extra params to what we log to the segment_size
-                    frameRate = int(representation.attrib['frameRate']) 
-                    codecs = str(representation.attrib['codecs']) 
-                    width = int(representation.attrib['width']) 
+                    frameRate = int(representation.attrib['frameRate'])
+                    codecs = str(representation.attrib['codecs'])
+                    width = int(representation.attrib['width'])
                     height = int(representation.attrib['height'])
                     # AEL -- end of list
-                    # AEL -- in the list of available bitrates, also export the other params 
+                    # AEL -- in the list of available bitrates, also export the other params
                     #config_dash.JSON_HANDLE["video_metadata"]['available_bitrates'].append([bandwidth, frameRate, codecs, width, height])
                     config_dash.JSON_HANDLE["video_metadata"]['available_bitrates'].append({'bandwidth' : bandwidth, 'frameRate' : frameRate, 'codecs' : codecs, 'width' : width, 'height' : height})
                     media_object[bandwidth] = MediaObject()
