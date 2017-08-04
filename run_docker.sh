@@ -142,6 +142,43 @@ func_pullYoMo
 func_runRandomOrder
 #func_runNonRandomOrder
 
+sleep 10
+
+echo ''
+echo 'DBG: video 3: k3XhRysoFio'
+VIDEO='-k3XhRysoFio'
+func_stopMONROEprocesses
+func_stopMONROEprocesses
+func_pullAStream
+func_pullYoMo
+func_runRandomOrder
+#func_runNonRandomOrder
+
+sleep 10
+
+echo ''
+echo 'DBG: video 4: lD8ww QBLUQ.'
+VIDEO='-lD8ww QBLUQ'
+func_stopMONROEprocesses
+func_stopMONROEprocesses
+func_pullAStream
+func_pullYoMo
+func_runRandomOrder
+#func_runNonRandomOrder
+
+
+sleep 10
+
+echo ''
+echo 'DBG: video 5: QS7lN7giXXc.'
+VIDEO='-QS7lN7giXXc'
+func_stopMONROEprocesses
+func_stopMONROEprocesses
+func_pullAStream
+func_pullYoMo
+func_runRandomOrder
+#func_runNonRandomOrder
+
 echo 'DBG: sleeping for 30min'
 sleep 1
 #sleep 1800
