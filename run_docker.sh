@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#last update: 02.08.2017
+#last update: 03.08.2017
 
 ###FUNCTION DECLARATIONS###
 
@@ -127,10 +127,11 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runRandomOrder
+func_runAStream_basic
+#func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 2: 7kAy3b9hvWM'
@@ -139,10 +140,11 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runRandomOrder
+func_runAStream_basic
+#func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 3: k3XhRysoFio'
@@ -151,23 +153,26 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runRandomOrder
+func_runAStream_basic
+func_runYoMo
+#func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 4: lD8ww QBLUQ.'
-VIDEO='-lD8ww QBLUQ'
+VIDEO='-lD8ww_QBLUQ'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runRandomOrder
+func_runAStream_basic
+#func_runRandomOrder
 #func_runNonRandomOrder
 
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 5: QS7lN7giXXc.'
@@ -176,7 +181,8 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runRandomOrder
+func_runAStream_basic
+#func_runRandomOrder
 #func_runNonRandomOrder
 
 echo 'DBG: sleeping for 30min'
