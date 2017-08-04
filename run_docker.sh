@@ -161,7 +161,11 @@ func_runYoMo
 sleep 1
 
 echo ''
+<<<<<<< HEAD
 echo 'DBG: video 4: lD8ww QBLUQ.'
+=======
+echo 'DBG: video 4: lD8ww_QBLUQ.'
+>>>>>>> a79288a54b357859f0e19046b31b88d37752fe8e
 VIDEO='-lD8ww_QBLUQ'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
