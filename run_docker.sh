@@ -157,8 +157,8 @@ func_runRandomOrder
 sleep 10
 
 echo ''
-echo 'DBG: video 4: lD8ww QBLUQ.'
-VIDEO='-lD8ww QBLUQ'
+echo 'DBG: video 4: lD8ww_QBLUQ.'
+VIDEO='-lD8ww_QBLUQ'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
