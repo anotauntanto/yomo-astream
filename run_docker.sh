@@ -127,8 +127,8 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runAStream_basic
-#func_runRandomOrder
+#func_runAStream_basic
+func_runRandomOrder
 #func_runNonRandomOrder
 
 sleep 10
@@ -140,8 +140,8 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-func_runAStream_basic
-#func_runRandomOrder
+#func_runAStream_basic
+func_runRandomOrder
 #func_runNonRandomOrder
 
 echo 'DBG: sleeping for 30min'
