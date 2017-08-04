@@ -19,7 +19,7 @@ function func_pullYoMo {
 function func_runYoMo {
   echo 'DBG: running YoMo container'
   sleep 1
-  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/yomo$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
+  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/yomo$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
 }
 
 function func_pullAStream {
@@ -31,25 +31,25 @@ function func_pullAStream {
 function func_runAStream {
   echo 'DBG: running AStream container'
   sleep 1
-  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/astream.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_basic {
   echo 'DBG: running AStream container (BASIC)'
   sleep 1
-  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream-basic$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/astream-basic$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_sara {
   echo 'DBG: running AStream container (SARA)'
   sleep 1
-  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream-sara$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/astream-sara$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_netflix {
   echo 'DBG: running AStream container (NETFLIX)'
   sleep 1
-  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream-netflix$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/astream-netflix$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runRandomOrder {
@@ -110,6 +110,11 @@ echo '----------DBG: starting script----------'
 echo "Enter number of batches:"
 read input1
 
+func_pullAStream
+func_pullYoMo
+
+NET_CONTAINER=`docker ps |grep monroe/noop | cut -d " " -f 1`
+
 for i in `seq 1 $input1`;
 do
 echo ''
@@ -125,9 +130,8 @@ echo 'DBG: video 1: pJ8HFgPKiZE'
 VIDEO='-pJ8HFgPKiZE'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
-func_pullAStream
-func_pullYoMo
-func_runAStream_basic
+#func_pullAStream
+#func_pullYoMo
 #func_runRandomOrder
 #func_runNonRandomOrder
 
@@ -138,8 +142,8 @@ echo 'DBG: video 2: 7kAy3b9hvWM'
 VIDEO='-7kAy3b9hvWM'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
-func_pullAStream
-func_pullYoMo
+#func_pullAStream
+#func_pullYoMo
 func_runAStream_basic
 #func_runRandomOrder
 #func_runNonRandomOrder
@@ -151,27 +155,20 @@ echo 'DBG: video 3: k3XhRysoFio'
 VIDEO='-k3XhRysoFio'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
-func_pullAStream
-func_pullYoMo
-func_runAStream_basic
-func_runYoMo
+#func_pullAStream
+#func_pullYoMo
 #func_runRandomOrder
 #func_runNonRandomOrder
 
 sleep 1
 
 echo ''
-<<<<<<< HEAD
-echo 'DBG: video 4: lD8ww QBLUQ.'
-=======
 echo 'DBG: video 4: lD8ww_QBLUQ.'
->>>>>>> a79288a54b357859f0e19046b31b88d37752fe8e
 VIDEO='-lD8ww_QBLUQ'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
-func_pullAStream
-func_pullYoMo
-func_runAStream_basic
+#func_pullAStream
+#func_pullYoMo
 #func_runRandomOrder
 #func_runNonRandomOrder
 
@@ -183,9 +180,8 @@ echo 'DBG: video 5: QS7lN7giXXc.'
 VIDEO='-QS7lN7giXXc'
 func_stopMONROEprocesses
 func_stopMONROEprocesses
-func_pullAStream
-func_pullYoMo
-func_runAStream_basic
+#func_pullAStream
+#func_pullYoMo
 #func_runRandomOrder
 #func_runNonRandomOrder
 
