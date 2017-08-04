@@ -127,7 +127,6 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-#func_runAStream_basic
 func_runRandomOrder
 #func_runNonRandomOrder
 
@@ -140,7 +139,6 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 func_pullAStream
 func_pullYoMo
-#func_runAStream_basic
 func_runRandomOrder
 #func_runNonRandomOrder
 
