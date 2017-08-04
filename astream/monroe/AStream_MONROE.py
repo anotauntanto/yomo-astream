@@ -34,6 +34,8 @@ import config_dash
 from dash_buffer import *
 from adaptation import basic_dash, basic_dash2, weighted_dash, netflix_dash
 from adaptation.adaptation import WeightedMean
+import subprocess
+#from subprocess import call
 
 # Constants
 DEFAULT_PLAYBACK = 'BASIC'
@@ -427,6 +429,8 @@ if __name__ == '__main__':
     """The main thread control the processes (experiment/metadata))."""
 
     """ Main AStream + MONROE Program wrapper """
+
+    #subprocess.call("./run_tshark.sh")
 
 # MONROE stuff
     if not DEBUG:

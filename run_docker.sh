@@ -145,7 +145,8 @@ func_runAStream_basic
 #func_runNonRandomOrder
 
 echo 'DBG: sleeping for 30min'
-sleep 1800
+sleep 1
+#sleep 1800
 done
 
 #func_stopMONROEprocesses
