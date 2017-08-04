@@ -19,7 +19,7 @@ function func_pullYoMo {
 function func_runYoMo {
   echo 'DBG: running YoMo container'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_CONFIG/yomo-example.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
+  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/yomo$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
 }
 
 function func_pullAStream {
@@ -31,25 +31,25 @@ function func_pullAStream {
 function func_runAStream {
   echo 'DBG: running AStream container'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_CONFIG/astream.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_basic {
   echo 'DBG: running AStream container (BASIC)'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_CONFIG/astream-basic$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream-basic$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_sara {
   echo 'DBG: running AStream container (SARA)'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_CONFIG/astream-sara$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream-sara$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runAStream_netflix {
   echo 'DBG: running AStream container (NETFLIX)'
   sleep 1
-  docker run --net=host -it --rm -v $LOC_CONFIG/astream-netflix$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
+  docker run --cap-add=NET_ADMIN --net=host -it --rm -v $LOC_CONFIG/astream-netflix$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results cmidoglu/astream
 }
 
 function func_runRandomOrder {
