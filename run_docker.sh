@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#last update: 03.08.2017
+#last update: 07.08.2017
 
 ###FUNCTION DECLARATIONS###
 
@@ -133,7 +133,9 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 #func_pullAStream
 #func_pullYoMo
-func_runRandomOrder
+#func_runRandomOrder
+func_runAStream_basic
+func_runYoMo
 #func_runNonRandomOrder
 
 sleep 10
@@ -172,7 +174,7 @@ func_stopMONROEprocesses
 func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 1
+sleep 10
 
 echo ''
 echo 'DBG: video 5: QS7lN7giXXc.'
