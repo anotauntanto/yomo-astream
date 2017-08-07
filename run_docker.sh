@@ -19,7 +19,8 @@ function func_pullYoMo {
 function func_runYoMo {
   echo 'DBG: running YoMo container'
   sleep 1
-  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/yomo$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker
+  YOMO_RUNTIME_LOG='runtimelog-'$(date '+%Y%m%d-%H%M%S')$VIDEO
+  docker run --cap-add=NET_ADMIN --net=container:$NET_CONTAINER -it --rm -v $LOC_CONFIG/yomo$VIDEO.config:/monroe/config -v $LOC_RESULT:/monroe/results mobiqoe/yomo_docker > $LOC_RESULT'/'$YOMO_RUNTIME_LOG
 }
 
 function func_pullAStream {
@@ -132,10 +133,10 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 #func_pullAStream
 #func_pullYoMo
-#func_runRandomOrder
+func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 1
+sleep 10
 
 echo ''
 echo 'DBG: video 2: 7kAy3b9hvWM'
@@ -144,11 +145,10 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 #func_pullAStream
 #func_pullYoMo
-func_runAStream_basic
-#func_runRandomOrder
+func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 1
+sleep 10
 
 echo ''
 echo 'DBG: video 3: k3XhRysoFio'
@@ -157,10 +157,10 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 #func_pullAStream
 #func_pullYoMo
-#func_runRandomOrder
+func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 1
+sleep 10
 
 echo ''
 echo 'DBG: video 4: lD8ww_QBLUQ.'
@@ -169,9 +169,8 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 #func_pullAStream
 #func_pullYoMo
-#func_runRandomOrder
+func_runRandomOrder
 #func_runNonRandomOrder
-
 
 sleep 1
 
@@ -182,12 +181,13 @@ func_stopMONROEprocesses
 func_stopMONROEprocesses
 #func_pullAStream
 #func_pullYoMo
-#func_runRandomOrder
+func_runRandomOrder
 #func_runNonRandomOrder
 
-echo 'DBG: sleeping for 30min'
-sleep 1
+#echo 'DBG: sleeping for 30min'
 #sleep 1800
+echo 'DBG: sleeping for 15sec'
+sleep 15
 done
 
 #func_stopMONROEprocesses

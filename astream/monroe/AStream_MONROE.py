@@ -47,7 +47,7 @@ MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
 LIST = False
 PLAYBACK = DEFAULT_PLAYBACK
 DOWNLOAD = False
-SEGMENT_LIMIT = 10
+SEGMENT_LIMIT = 100
 
 
 # Configuration
