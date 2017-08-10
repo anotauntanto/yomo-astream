@@ -36,7 +36,7 @@
   "cnf_wait_time_s_videos": 20,             # time to wait for uplink measurement to finish after nominal time
   #"cnf_log": 10000, # = 10ms; how often to collect tcp_info
   "tar_additional_results": True        # tar additional logfiles
-  "cnf_file_databaseOutput": "{time}_{ytid}_summary.json",
+  "cnf_file_database_output": "{time}_{ytid}_summary.json",
   "cnf_file_yomo": "{time}_{ytid}_yomo_{logtype}",
   "cnf_file_astream": "{time}_{ytid}_astream_{logtype}"
 
