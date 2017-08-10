@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#last update: 07.08.2017
+#last update: 08.08.2017
 
 ###FUNCTION DECLARATIONS###
 
@@ -62,40 +62,40 @@ function func_runRandomOrder {
       echo '*** AStream (BASIC) ***'
       echo ''
       func_runAStream_basic
-      sleep 1; fi
+      sleep 10; fi
 
       if [ $entry -eq 2 ]; then
         echo ''
         echo '*** AStream (SARA) ***'
         echo ''
         func_runAStream_sara
-        sleep 1; fi
+        sleep 10; fi
 
         if [ $entry -eq 3 ]; then
           echo ''
           echo '*** AStream (NETFLIX) ***'
           echo ''
           func_runAStream_netflix
-          sleep 1; fi
+          sleep 10; fi
 
           if [ $entry -eq 4 ]; then
             echo ''
             echo '*** YoMo ***'
             echo ''
             func_runYoMo
-            sleep 1; fi
+            sleep 10; fi
           done
         }
 
 function func_runNonRandomOrder {
   func_runAStream_basic
-  sleep 1
+  sleep 10
   func_runAStream_sara
-  sleep 1
+  sleep 10
   func_runAStream_netflix
-  sleep 1
+  sleep 10
   func_runYoMo
-  sleep 1
+  sleep 10
 }
 
 function func_test {
@@ -121,9 +121,9 @@ do
 echo ''
 echo '----------DBG: running measurement batch '$i'----------'
 
-OUTFOLDER='results-'$(date '+%Y%m%d-%H%M%S')
-LOC_CONFIG='/home/monroeSA/yomo-astream/config'
-LOC_RESULT='/home/monroeSA/yomo-astream/results/'$OUTFOLDER
+OUTFOLDER='results-batch'$i'-'$(date '+%Y%m%d-%H%M%S')
+LOC_CONFIG='/home/cise/yomo-astream/config'
+LOC_RESULT='/home/cise/yomo-astream/results/'$OUTFOLDER
 echo 'DBG: results folder: '$LOC_RESULT
 echo ''
 
@@ -136,7 +136,7 @@ func_stopMONROEprocesses
 func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 2: 7kAy3b9hvWM'
@@ -148,7 +148,7 @@ func_stopMONROEprocesses
 func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 3: k3XhRysoFio'
@@ -160,7 +160,7 @@ func_stopMONROEprocesses
 func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 4: lD8ww_QBLUQ.'
@@ -172,7 +172,7 @@ func_stopMONROEprocesses
 func_runRandomOrder
 #func_runNonRandomOrder
 
-sleep 10
+sleep 1
 
 echo ''
 echo 'DBG: video 5: QS7lN7giXXc.'
