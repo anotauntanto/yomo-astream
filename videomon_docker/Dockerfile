@@ -1,6 +1,6 @@
 FROM monroe/base
 
-MAINTAINER smartqoe@gmail.com
+MAINTAINER VideoMon
 
 RUN  echo "export HOME=/" \
 		&& export HOME=/ 
@@ -18,6 +18,6 @@ RUN echo "install lspci" \
         && export DEBIAN_FRONTEND=noninteractive \
 		&& apt-get install -q -y pciutils
 
-COPY files/* /opt/monroe/
+COPY files_*/* /opt/monroe/
 
-ENTRYPOINT ["dumb-init", "--", "/bin/bash", "-e", "/opt/monroe/setup.sh"]
+ENTRYPOINT ["dumb-init", "--", "/usr/bin/python", "-e", "/opt/monroe/start.py"]
