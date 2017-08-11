@@ -32,9 +32,11 @@ import traceback
 import zmq
 
 sys.path.append('files_yomo')
+sys.path.append('files_astream')
 
 ##TODO
 from measurements import *
+from AStream_MONROE import *
 #from yomo import * #run_yomo function must be defined
 #from astream import * #run_astream function must be defined
 ##/TODO
@@ -69,7 +71,9 @@ EXPCONFIG = {
                           "wlan0",
                           "wwan0",
                           "wwan1",
-                          "wwan2"
+                          "wwan2",
+                          "op0",
+                          "op1"
                           ],                      # Interfaces to NOT run the experiment on
   "interfaces_without_metadata": ["eth0",
                                   "wlan0"],       # Manual metadata on these IF
@@ -265,17 +269,18 @@ def run_exp(meta_info, expconfig):
         #print ("Running traceroute against AStream server on interface: {}".format(cfg['modeminterfacename']))
         #run_traceroute(<target2>)
         #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
-        #outputs_astream=run_astream(<fileprefix,server,port,mpd,playbacktype,segmentlimit>)
+        #outputs_astream=run_astream(<video id,server,port,playbacktype,segmentlimit,fileprefix>)
 
-        print('Pseudo running YoMo')# and AStream')
-        run_yomo(cfg['cnf_video_id'],300,'TMP_YoMo')
+        print('Pseudo running AStream')# and AStream')
+        #run_yomo(cfg['cnf_video_id'],300,'TMP_YoMo')
+        run_astream(cfg['cnf_video_id'],cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],'TMP_AStream',cfg['cnf_astream_server_host'],cfg['cnf_astream_server_port'])
 
         #TODO: find a way to write summary results into summary JSON
     except Exception as e:
         if cfg['verbosity'] > 0:
             print ("Execution or parsing failed for "
-                   "config : {}, "
-                   "error: {}").format(cfg, e)
+                   #"config : {}, "
+                   "error: {}").format(e)#cfg, e)
 
 #/TODO
 

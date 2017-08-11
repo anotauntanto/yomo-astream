@@ -28,7 +28,7 @@ LOG_LEVEL = None
 
 # Set '-' to print to screen
 # LOG_FOLDER = "ASTREAM_LOGS/"
-LOG_FOLDER = "/monroe/results/"
+LOG_FOLDER = "tmp" #"/monroe/results/"
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
@@ -55,7 +55,7 @@ JSON_HANDLE['playback_info'] = {'start_time': None,
                                 'down_shifts': 0
                                 }
 # AEL -- adding MONROE modem info to the output JSON
-# AEL -- need to change this to be a list 
+# AEL -- need to change this to be a list
 JSON_HANDLE['MONROE'] = list() # list of dictionaries
 # {
 #             "Guid": None,

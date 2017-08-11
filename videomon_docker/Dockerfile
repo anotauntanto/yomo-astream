@@ -20,5 +20,6 @@ RUN echo "install lspci" \
 
 COPY start.py /opt/monroe/
 COPY files_yomo /opt/monroe/
+COPY files_astream /opt/monroe/
 
 ENTRYPOINT ["dumb-init", "--", "/usr/bin/python", "/opt/monroe/start.py"]
