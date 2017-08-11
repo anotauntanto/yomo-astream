@@ -24,7 +24,7 @@ def run_yomo(ytid, duration, prefix):
 	sys.stdout.flush()
 	sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-	#start display	
+	#start display
 	display = Display(visible=0, size=(1920, 1080)) #display size has to be cutomized 1920, 1080
 	print time.time(), ' start display'
 	display.start()
@@ -51,7 +51,7 @@ def run_yomo(ytid, duration, prefix):
 		js = jsFile.read()
 		jsFile.close
 
-		print time.time(), ' start video ', ytid]
+		print time.time(), ' start video ', ytid
 		browser.get(url)
 		browser.execute_script(js)
 		if (duration < 0):
@@ -73,14 +73,14 @@ def run_yomo(ytid, duration, prefix):
 		browser.close()
 		print time.time(), ' finished firefox'
 
-		
+
 	except Exception as e:
 		print time.time(), ' exception thrown'
 		print e
 		ts = time.time()
 		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
 		print st
-		
+
 	display.stop()
 	print time.time(), 'display stopped'
 	return;

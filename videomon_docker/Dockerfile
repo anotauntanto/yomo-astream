@@ -19,5 +19,6 @@ RUN echo "install lspci" \
 		&& apt-get install -q -y pciutils
 
 COPY start.py /opt/monroe/
+COPY files_yomo /opt/monroe/
 
 ENTRYPOINT ["dumb-init", "--", "/usr/bin/python", "/opt/monroe/start.py"]

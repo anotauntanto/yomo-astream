@@ -31,7 +31,10 @@ import time
 import traceback
 import zmq
 
+sys.path.append('files_yomo')
+
 ##TODO
+from measurements import *
 #from yomo import * #run_yomo function must be defined
 #from astream import * #run_astream function must be defined
 ##/TODO
@@ -63,7 +66,10 @@ EXPCONFIG = {
   "disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
-                          "wlan0"
+                          "wlan0",
+                          "wwan0",
+                          "wwan1",
+                          "wwan2"
                           ],                      # Interfaces to NOT run the experiment on
   "interfaces_without_metadata": ["eth0",
                                   "wlan0"],       # Manual metadata on these IF
@@ -261,7 +267,9 @@ def run_exp(meta_info, expconfig):
         #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
         #outputs_astream=run_astream(<fileprefix,server,port,mpd,playbacktype,segmentlimit>)
 
-        print('Pseudo running YoMo and AStream')
+        print('Pseudo running YoMo')# and AStream')
+        run_yomo(cfg['cnf_video_id'],300,'TMP_YoMo')
+
         #TODO: find a way to write summary results into summary JSON
     except Exception as e:
         if cfg['verbosity'] > 0:
