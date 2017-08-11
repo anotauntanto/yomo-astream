@@ -31,10 +31,10 @@ import time
 import traceback
 import zmq
 
-#TODO
-from yomo import * #run_yomo function must be defined
-from astream import * #run_astream function must be defined
-#/TODO
+##TODO
+#from yomo import * #run_yomo function must be defined
+#from astream import * #run_astream function must be defined
+##/TODO
 
 # Configuration
 CONFIGFILE = '/monroe/config'
@@ -62,26 +62,27 @@ EXPCONFIG = {
   "add_modem_metadata_to_result": False,          # set to True to add one captured modem metadata to nettest result
   "disabled_interfaces": ["lo",
                           "metadata",
-                          "eth0",
+                          "eth2",
                           "wlan0"
                           ],                      # Interfaces to NOT run the experiment on
   "interfaces_without_metadata": ["eth0",
                                   "wlan0"],       # Manual metadata on these IF
+  "timestamp": time.time(),
 
   # These values are specific for this experiment
-  "cnf_video_id": ["QS7lN7giXXc"],                 # (YouTube) ID of the video to be streamed
-  "cnf_astream_algorithm": ["Basic"],              # Playback type in astream
-  "cnf_astream_download": False                    # Download option for AStream
-  "cnf_astream_segment_limit": 150                 # Segment limit option for AStream
+  "cnf_video_id": "QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
+  "cnf_astream_algorithm": "Basic",              # Playback type in astream
+  "cnf_astream_download": False,                    # Download option for AStream
+  "cnf_astream_segment_limit": 150,                 # Segment limit option for AStream
   "cnf_astream_server_host": "",                   # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "",                   # REQUIRED PARAMETER; Port to connect to for astream
   "cnf_yomo_playback_duration_s": -1,              # Nominal duration for the youyube video playback
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
   "cnf_additional_results": True                   # Whether or not to tar additional log files
-  "cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
-  "cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
-  "cnf_file_astream": "{time}_{ytid}_astream"      # Prefix for AStream logs
+  #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
+  #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
+  #"cnf_file_astream": "{time}_{ytid}_astream"      # Prefix for AStream logs
   #"enabled_interfaces": ["op0"],                  # Interfaces to run the experiment on
   #"cnf_require_modem_metadata": {"DeviceMode": 4},# only run if in LTE (5) or UMTS (4)
   #"cnf_ping_": ,                                  # TODO
@@ -182,11 +183,13 @@ def get_ip(ifname):
     return netifaces.ifaddresses(ifname)[netifaces.AF_INET][0]['addr']
 
 def check_meta(info, graceperiod, expconfig):
-    """Check if we have recieved required information within graceperiod."""
+    """Check if we have received required information within graceperiod."""
     if not (expconfig["modeminterfacename"] in info and
             "Operator" in info and
             "Timestamp" in info and
             time.time() - info["Timestamp"] < graceperiod):
+        print('DBG: testpoint0')
+        print info
         return False
     if not "require_modem_metadata" in expconfig:
         return True
@@ -213,9 +216,60 @@ def add_manual_metadata_information(info, ifname, expconfig):
 def create_meta_process(ifname, expconfig):
     meta_info = Manager().dict()
     process = Process(target=metadata,
-                      args=(meta_info, ifname, expconfig, ))
+                      args=(meta_info, ifname, expconfig))
     process.daemon = True
     return (meta_info, process)
+
+#TODO
+
+def run_exp(meta_info, expconfig):
+    """Seperate process that runs the experiment and collect the ouput.
+        Will abort if the interface goes down.
+    """
+
+    cfg = expconfig.copy()
+    try:
+        if 'cnf_add_to_result' not in cfg:
+            cfg['cnf_add_to_result'] = {}
+            print('DBG: testpoint1')
+            #print cfg
+        cfg['cnf_add_to_result'].update({
+            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
+            "Guid": cfg['guid'],
+            "DataId": cfg['dataid'],
+            "DataVersion": cfg['dataversion'],
+            "NodeId": cfg['nodeid'],
+            "Iccid": meta_info["ICCID"],
+            "Operator": meta_info["Operator"]
+        })
+        print('DBG: testpoint2')
+
+        # Add metadata if requested
+        if cfg['add_modem_metadata_to_result']:
+            print('DBG: testpoint3')
+            for k,v in meta_info.items():
+                cfg['cnf_add_to_result']['info_meta_modem_' + k] = v
+                print('DBG: testpoint4')
+
+        # Run traceroute + YoMo, then traceroute + AStream once
+        #print ("Running traceroute against YouTube server on interface: {}".format(cfg['modeminterfacename']))
+        #run_traceroute(<target1>)
+        #print ("Running YoMo with video: {}".format(cfg['cnf_video_id']))
+        #outputs_yomo=run_yomo(<fileprefix,video,playback duration>)
+        #print ("Running traceroute against AStream server on interface: {}".format(cfg['modeminterfacename']))
+        #run_traceroute(<target2>)
+        #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
+        #outputs_astream=run_astream(<fileprefix,server,port,mpd,playbacktype,segmentlimit>)
+
+        print('Pseudo running YoMo and AStream')
+        #TODO: find a way to write summary results into summary JSON
+    except Exception as e:
+        if cfg['verbosity'] > 0:
+            print ("Execution or parsing failed for "
+                   "config : {}, "
+                   "error: {}").format(cfg, e)
+
+#/TODO
 
 def create_exp_process(meta_info, expconfig):
     process = Process(target=run_exp, args=(meta_info, expconfig, ))
@@ -228,12 +282,12 @@ def create_exp_process(meta_info, expconfig):
 if __name__ == '__main__':
     """The main thread controling the processes (experiment/metadata))."""
 
-    try:
-        with open(CONFIGFILE) as configfd:
-            EXPCONFIG.update(json.load(configfd))
-    except Exception as e:
-        print("Cannot retrive expconfig {}".format(e))
-        raise e
+    #try:
+    #    with open(CONFIGFILE) as configfd:
+    #        EXPCONFIG.update(json.load(configfd))
+    #except Exception as e:
+    #    print("Cannot retrive expconfig {}".format(e))
+    #    raise e
 
     # Short hand variables and check so we have all variables we need
     try:
@@ -253,7 +307,7 @@ if __name__ == '__main__':
         print("Missing expconfig variable {}".format(e))
         raise e
 
-    sequence_number = 0 #TODO
+    #TODO
 
     tot_start_time = time.time()
     for ifname in netifaces.interfaces():
@@ -372,78 +426,8 @@ if __name__ == '__main__':
 
         elapsed = time.time() - start_time
         if EXPCONFIG['verbosity'] > 1:
-            config_dash.LOG.info("Finished {} after {}".format(ifname, elapsed))
+            print("Finished {} after {}".format(ifname, elapsed))
         time.sleep(time_between_experiments)
 
     if EXPCONFIG['verbosity'] > 1:
         print("Complete experiment took {}, now exiting".format(time.time() - tot_start_time))
-
-#TODO
-
-def run_exp(meta_info, expconfig):
-    """Seperate process that runs the experiment and collect the ouput.
-        Will abort if the interface goes down.
-    """
-
-    cfg = expconfig.copy()
-    try:
-        if 'cnf_add_to_result' not in cfg:
-            cfg['cnf_add_to_result'] = {}
-        cfg['cnf_add_to_result'].update({
-            "cnf_server_host": cfg['cnf_server_host'],
-            "Guid": cfg['guid'],
-            "DataId": cfg['dataid'],
-            "DataVersion": cfg['dataversion'],
-            "NodeId": cfg['nodeid'],
-            "Timestamp": cfg['timestamp'],
-            "Iccid": meta_info["ICCID"],
-            "Operator": meta_info["Operator"],
-            "SequenceNumber": cfg['sequence_number']
-        })
-        # Add metadata if requested
-        if cfg['add_modem_metadata_to_result']:
-            for k,v in meta_info.items():
-                cfg['cnf_add_to_result']['info_meta_modem_' + k] = v
-
-        # Run traceroute + YoMo, then traceroute + AStream once
-        print ("Running traceroute against YouTube server on interface: {}".format(cfg['modeminterfacename']))
-        run_traceroute(<target1>)
-        print ("Running YoMo with video: {}".format(cfg['cnf_video_id']))
-        outputs_yomo=run_yomo(<fileprefix,video,playback duration>)
-        print ("Running traceroute against AStream server on interface: {}".format(cfg['modeminterfacename']))
-        run_traceroute(<target2>)
-        print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
-        outputs_astream=run_astream(<fileprefix,server,port,mpd,playbacktype,segmentlimit>)
-
-        #TODO: find a way to write summary results into summary JSON
-
-
-def traceroute(target, interface):
-    cmd = ['traceroute', '-A']
-    if (interface):
-        cmd.extend(['-i', interface])
-    cmd.append(target)
-    if EXPCONFIG['verbosity'] > 1:
-        print("doing traceroute...")
-    time_start = time.time()
-    p = Popen(cmd, stdout=PIPE)
-    data = p.communicate()[0]
-    time_end = time.time()
-    if EXPCONFIG['verbosity'] > 1:
-        print("traceroute finished.")
-    if EXPCONFIG['verbosity'] > 2:
-        print("traceroute: {}".format(data))
-    try:
-        traceroute = parse_traceroute(data)
-    except Exception as e:
-        traceroute = {'error': 'could not parse traceroute'}
-    if not traceroute:
-        traceroute = {'error': 'no traceroute output'}
-    traceroute['time_start'] = time_start
-    traceroute['time_end'] = time_end
-    traceroute['raw'] = data.decode('ascii', 'replace')
-    with NamedTemporaryFile(mode='w+', prefix='tmptraceroute', suffix='.json', delete=False) as f:
-        f.write(json.dumps(traceroute))
-        return f.name
-
-#/TODO
