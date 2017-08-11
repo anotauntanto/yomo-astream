@@ -40,8 +40,6 @@ import subprocess
 # Globals for arg parser with the default values
 MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
 DOWNLOAD_CHUNK = 1024
-LIST = False
-PLAYBACK = 'BASIC'
 DOWNLOAD = False
 SEGMENT_LIMIT = 100
 exp_grace = 120
@@ -248,17 +246,19 @@ def print_representations(dp_object):
     for bandwidth in dp_object.video:
         print bandwidth
 
-def run_astream(video_id,algorithm,segment_limit,prefix,ifname,server_host="http://128.39.37.161",server_port=12345):
-    download = False
-    print("DBG: testpoint astream1")
+def run_astream(video_id,server_host,server_port,algorithm,segment_limit,download,ifname,prefix,resultdir):
+
+    print("DBG: testpoint run_astream")
     #subprocess.call("./run_tshark.sh")
-    mpd="http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
-    #TODO: create appropriate URL for MPD file
+
+    #mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
+    mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
+    print mpd
 
     # create the log files
-    playback_type=PLAYBACK.lower()
-    configure_log_file(playback_type=PLAYBACK.lower(), log_file = config_dash.LOG_FILENAME)
-    config_dash.JSON_HANDLE['playback_type'] = PLAYBACK.lower()
+    playback_type=algorithm.lower()
+    configure_log_file(playback_type=algorithm.lower(), log_file = config_dash.LOG_FILENAME)
+    config_dash.JSON_HANDLE['playback_type'] = algorithm.lower()
     config_dash.LOG.info("Starting AStream container")
     config_dash.LOG.info("Starting Experiment Run on if : {}".format(ifname))
 
@@ -327,7 +327,7 @@ def run_astream(video_id,algorithm,segment_limit,prefix,ifname,server_host="http
                 return None
             while dash_player.playback_state not in dash_buffer.EXIT_STATES:
                 time.sleep(1)
-                    
+
         # process = Process(target=run_exp, args=(mpd_file, dp_object, domain, playback_type, download, video_segment_duration, ))
         # process.daemon = True
         # process.start()
@@ -347,72 +347,3 @@ def run_astream(video_id,algorithm,segment_limit,prefix,ifname,server_host="http
     config_dash.LOG.info("Finished {} after {}".format(ifname, elapsed))
     time.sleep(wait_after_exp_s)
     config_dash.LOG.info("Exiting")
-
-
-
-
-
-def run_exp(mpd_file, dp_object, domain, playback_type=None, download=False, video_segment_duration=None):
-    """Seperate process that runs the experiment and collects the ouput.
-        Will abort if the interface goes down.
-        -- this essentially upgrades the start_playback_smart() function
-        Run the DASH client from command line:
-        python dash_client.py -m http://128.39.37.161:8080/BigBuckBunny_4s.mpd -n 20
-
-    """
-
-    print("DBG: testpoint astream4-run_exp")
-    # ifname = meta_info[expconfig["modeminterfacename"]]
-
-    try:
-        config_dash.LOG.info("Initializing the DASH buffer...")
-        dash_player = dash_buffer.DashPlayer(dp_object.playback_duration, video_segment_duration)
-        dash_player.start()
-        # # AEL: adding meta-info to dash json output -- tracking "played" segments
-        # scriptname = expconfig['script'].replace('/', '.')
-        # dataid = expconfig.get('dataid', scriptname)
-        # dataversion = expconfig.get('dataversion', 1)
-        #
-        # config_dash.JSON_HANDLE['MONROE'].append({
-        #     "Guid": expconfig['guid'],
-        #     "DataId": dataid,
-        #     "DataVersion": dataversion,
-        #     "NodeId": expconfig['nodeid'],
-        #     "Timestamp": time.time(),
-        #     "Iccid": "fakeICCID",#meta_info["ICCID"],
-        #     "NWMCCMNC": meta_info["NWMCCMNC"], # modify to MCCMNC from SIM
-        #     "InterfaceName": ifname,
-        #     "Operator": meta_info["Operator"],
-        #     "SequenceNumber": 1
-        # })
-
-        # start the DASH player, according to the selected playback_type
-        if "all" in playback_type.lower():
-            if mpd_file:
-                config_dash.LOG.critical("Start ALL Parallel PLayback")
-                start_playback_all(dp_object, domain)
-        elif "basic" in playback_type.lower():
-            config_dash.LOG.critical("Started Basic-DASH Playback")
-            start_playback_smart(dash_player, dp_object, domain, "BASIC", download, video_segment_duration, ifname)
-        elif "sara" in playback_type.lower():
-            config_dash.LOG.critical("Started SARA-DASH Playback")
-            start_playback_smart(dash_player, dp_object, domain, "SMART", download, video_segment_duration, ifname)
-        elif "netflix" in playback_type.lower():
-            config_dash.LOG.critical("Started Netflix-DASH Playback")
-            start_playback_smart(dash_player, dp_object, domain, "NETFLIX", download, video_segment_duration, ifname)
-        else:
-            config_dash.LOG.error("Unknown Playback parameter {}".format(playback_type))
-            return None
-        while dash_player.playback_state not in dash_buffer.EXIT_STATES:
-            time.sleep(1)
-
-        # if ifname != meta_info['InternalInterface']:
-        #     config_dash.LOG.info("Error: Interface has changed during the astream experiment, abort")
-        #     return None
-
-        config_dash.LOG.info("MONROE - Finished Experiment")
-    except Exception as e:
-        config_dash.LOG.info("MONROE - Execution or parsing failed")
-        config_dash.LOG.error(e)
-        print ("DBG: error in run_exp")
-        print (e)

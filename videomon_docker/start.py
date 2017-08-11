@@ -31,15 +31,11 @@ import time
 import traceback
 import zmq
 
-sys.path.append('files_yomo')
-sys.path.append('files_astream')
+#sys.path.append('files_yomo')
+#sys.path.append('files_astream')
 
-##TODO
-from measurements import *
-from AStream_MONROE import *
-#from yomo import * #run_yomo function must be defined
-#from astream import * #run_astream function must be defined
-##/TODO
+from videomon_yomo import *
+from videomon_astream import *
 
 # Configuration
 CONFIGFILE = '/monroe/config'
@@ -77,7 +73,7 @@ EXPCONFIG = {
                           ],                      # Interfaces to NOT run the experiment on
   "interfaces_without_metadata": ["eth0",
                                   "wlan0"],       # Manual metadata on these IF
-  "timestamp": time.time(),
+  "timestamp": time.gmtime(),
 
   # These values are specific for this experiment
   "cnf_video_id": "QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
@@ -271,18 +267,32 @@ def run_exp(meta_info, expconfig):
         #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
         #outputs_astream=run_astream(<video id,server,port,playbacktype,segmentlimit,fileprefix>)
 
-        print('Pseudo running AStream')# and AStream')
-        #run_yomo(cfg['cnf_video_id'],300,'TMP_YoMo')
-        run_astream(cfg['cnf_video_id'],cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],'TMP_AStream',cfg['cnf_astream_server_host'],cfg['cnf_astream_server_port'])
+        #TODO: construct filename prefixes for YoMo and AStream
+
+        prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
+        prefix_yomo=cfg['dataid']+'_'+prefix_timestamp+'_yomo_'
+        prefix_astream=cfg['dataid']+'_'+prefix_timestamp+'_astream_'
+
+        print('Prefix for YoMo:'+prefix_yomo)
+        print('Prefix for AStream:'+prefix_astream)
+
+        ifname=meta_info[expconfig["modeminterfacename"]]
+
+        print('Pseudo-running AStream')# and AStream')
+        #run_yomo(cfg['cnf_video_id'],300,prefix_yomo)
+        server_host="128.39.37.161"
+        server_port="8080"
+        video_id="BigBuckBunny_4s"
+        
+        run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
 
         #TODO: find a way to write summary results into summary JSON
+
     except Exception as e:
         if cfg['verbosity'] > 0:
             print ("Execution or parsing failed for "
                    #"config : {}, "
                    "error: {}").format(e)#cfg, e)
-
-#/TODO
 
 def create_exp_process(meta_info, expconfig):
     process = Process(target=run_exp, args=(meta_info, expconfig, ))
