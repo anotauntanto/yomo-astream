@@ -251,8 +251,8 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     print("DBG: testpoint run_astream")
     #subprocess.call("./run_tshark.sh")
 
-    #mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
-    mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
+    mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
+    #mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
     print mpd
 
     # create the log files
@@ -284,12 +284,12 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
         for bandwidth in dp_object.video:
             config_dash.LOG.info(bandwidth)
 
-            print("DBG: testpoint astream4-run_exp")
+        print("DBG: testpoint astream4-run_exp")
             # ifname = meta_info[expconfig["modeminterfacename"]]
 
-            config_dash.LOG.info("Initializing the DASH buffer...")
-            dash_player = dash_buffer.DashPlayer(dp_object.playback_duration, video_segment_duration)
-            dash_player.start()
+        config_dash.LOG.info("Initializing the DASH buffer...")
+        dash_player = dash_buffer.DashPlayer(dp_object.playback_duration, video_segment_duration)
+        dash_player.start()
                 # # AEL: adding meta-info to dash json output -- tracking "played" segments
                 # scriptname = expconfig['script'].replace('/', '.')
                 # dataid = expconfig.get('dataid', scriptname)
@@ -309,24 +309,24 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
                 # })
 
                 # start the DASH player, according to the selected playback_type
-            if "all" in playback_type.lower():
-                if mpd_file:
-                    config_dash.LOG.critical("Start ALL Parallel PLayback")
-                    start_playback_all(dp_object, domain)
-            elif "basic" in playback_type.lower():
-                config_dash.LOG.critical("Started Basic-DASH Playback")
-                start_playback_smart(dash_player, dp_object, domain, "BASIC", download, video_segment_duration, ifname)
-            elif "sara" in playback_type.lower():
-                config_dash.LOG.critical("Started SARA-DASH Playback")
-                start_playback_smart(dash_player, dp_object, domain, "SMART", download, video_segment_duration, ifname)
-            elif "netflix" in playback_type.lower():
-                config_dash.LOG.critical("Started Netflix-DASH Playback")
-                start_playback_smart(dash_player, dp_object, domain, "NETFLIX", download, video_segment_duration, ifname)
-            else:
-                config_dash.LOG.error("Unknown Playback parameter {}".format(playback_type))
-                return None
-            while dash_player.playback_state not in dash_buffer.EXIT_STATES:
-                time.sleep(1)
+        if "all" in playback_type.lower():
+            if mpd_file:
+                config_dash.LOG.critical("Start ALL Parallel PLayback")
+                start_playback_all(dp_object, domain)
+        elif "basic" in playback_type.lower():
+            config_dash.LOG.critical("Started Basic-DASH Playback")
+            start_playback_smart(dash_player, dp_object, domain, "BASIC", download, video_segment_duration, ifname)
+        elif "sara" in playback_type.lower():
+            config_dash.LOG.critical("Started SARA-DASH Playback")
+            start_playback_smart(dash_player, dp_object, domain, "SMART", download, video_segment_duration, ifname)
+        elif "netflix" in playback_type.lower():
+            config_dash.LOG.critical("Started Netflix-DASH Playback")
+            start_playback_smart(dash_player, dp_object, domain, "NETFLIX", download, video_segment_duration, ifname)
+        else:
+            config_dash.LOG.error("Unknown Playback parameter {}".format(playback_type))
+            return None
+        while dash_player.playback_state not in dash_buffer.EXIT_STATES:
+            time.sleep(1)
 
         # process = Process(target=run_exp, args=(mpd_file, dp_object, domain, playback_type, download, video_segment_duration, ))
         # process.daemon = True

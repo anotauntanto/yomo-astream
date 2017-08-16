@@ -52,7 +52,7 @@ EXPCONFIG = {
   "dataid": "MONROE.EXP.VIDEO",
   "nodeid": "fake.nodeid",
   "meta_grace": 120,                              # Grace period to wait for interface metadata
-  "exp_grace": 300,                               # Grace period before killing experiment
+  "exp_grace": 600,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
   "time_between_experiments": 0,
   "verbosity": 2,                                 # 0 = "Mute", 1=error, 2=Information, 3=verbose
@@ -60,7 +60,7 @@ EXPCONFIG = {
   "modeminterfacename": "InternalInterface",
   "save_metadata_topic": "MONROE.META",
   "save_metadata_resultdir": None,                # set to a dir to enable saving of metadata
-  "add_modem_metadata_to_result": False,          # set to True to add one captured modem metadata to nettest result
+  "add_modem_metadata_to_result": True,          # set to True to add one captured modem metadata to nettest result
   "disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
@@ -76,7 +76,7 @@ EXPCONFIG = {
   "timestamp": time.gmtime(),
 
   # These values are specific for this experiment
-  "cnf_video_id": "QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
+  "cnf_video_id": "pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
   "cnf_astream_algorithm": "Basic",              # Playback type in astream
   "cnf_astream_download": False,                    # Download option for AStream
   "cnf_astream_segment_limit": 150,                 # Segment limit option for AStream
@@ -240,13 +240,14 @@ def run_exp(meta_info, expconfig):
             print('DBG: testpoint1')
             #print cfg
         cfg['cnf_add_to_result'].update({
-            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
             "Guid": cfg['guid'],
             "DataId": cfg['dataid'],
             "DataVersion": cfg['dataversion'],
             "NodeId": cfg['nodeid'],
             "Iccid": meta_info["ICCID"],
-            "Operator": meta_info["Operator"]
+            "Operator": meta_info["Operator"],
+            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
+            "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
         })
         print('DBG: testpoint2')
 
@@ -282,9 +283,15 @@ def run_exp(meta_info, expconfig):
         #run_yomo(cfg['cnf_video_id'],300,prefix_yomo)
         server_host="128.39.37.161"
         server_port="8080"
-        video_id="BigBuckBunny_4s"
-        
-        run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+        #video_id="BigBuckBunny_4s"
+
+        #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+        run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+        print cfg['cnf_add_to_result']
+        towrite_data=dict()
+        towrite_data['TEMPOUTPUT'] = cfg['cnf_add_to_result']
+        towrite_file='/monroe/results/temp_log.json'
+        write_json(towrite_data,towrite_file)
 
         #TODO: find a way to write summary results into summary JSON
 
@@ -303,7 +310,7 @@ def create_exp_process(meta_info, expconfig):
 #Main functions
 
 if __name__ == '__main__':
-    """The main thread controling the processes (experiment/metadata))."""
+    """The main thread controling the processes (experiment/metadata)."""
 
     #try:
     #    with open(CONFIGFILE) as configfd:
