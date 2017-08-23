@@ -31,7 +31,7 @@ var run = function (){
 		var i = player.buffered.length;
 		var availablePlaybackTime = player.buffered.end(i-1);
 		var bufferedTime = availablePlaybackTime - currentTime;
-		outC = outC + new Date().getTime() + ";" +  currentTime + ";" + bufferedTime + ";" + availablePlaybackTime +"\n";
+		outC = outC + new Date().getTime() + "#" +  currentTime + "#" + bufferedTime + "#" + availablePlaybackTime +"\n";
 		document.getElementById("outC").innerHTML = outC;
 		document.getElementById("outE").innerHTML = outE;
 		x++;
@@ -48,35 +48,35 @@ function getInfos(){
 		last_videoHeight = videoHeight;
 		var videoWidth = player.videoWidth;
 		var infos = "quality:"+ videoHeight + "p" + " (" + videoWidth + "x" + videoHeight + ")";
-		outE = outE + currentTime + ";" + infos + "\n";
+		outE = outE + currentTime + "#" + infos + "\n";
 	}
 
 	var volume = player.volume;
 	if(last_volume != volume){
 		last_volume = volume;
 		var infos = "volume:"+ volume + "";
-		outE = outE + currentTime + ";" + infos + "\n";
+		outE = outE + currentTime + "#" + infos + "\n";
 	}
 
 	var duration = player.duration;
 	if(last_duration != duration){
 		last_duration = duration;
 		var infos = "duration:"+ duration + "";
-		outE = outE + currentTime + ";" + infos + "\n";
+		outE = outE + currentTime + "#" + infos + "\n";
 	}
 
 	var ytid = getYouTubeID();
 	if(last_ytid != ytid){
 		last_ytid = ytid;
 		var infos = "ytid:"+ ytid + "";
-		outE = outE + currentTime + ";" + infos + "\n";
+		outE = outE + currentTime + "#" + infos + "\n";
 	}
 
 	var title = getTitle();
 	if(last_title != title){
 		last_title = title;
 		var infos = "title:"+ title + "";
-		outE = outE + currentTime + ";" + infos + "\n";
+		outE = outE + currentTime + "#" + infos + "\n";
 	}        
 };
 
@@ -108,7 +108,7 @@ function addEventListeners(){
 	  var event = "loadstart";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("canplay", function() 
@@ -116,7 +116,7 @@ function addEventListeners(){
 	  var event = "canplay";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("playing", function() 
@@ -124,7 +124,7 @@ function addEventListeners(){
 	  var event = "playing";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("play", function() 
@@ -132,7 +132,7 @@ function addEventListeners(){
 	  var event = "play";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("pause", function() 
@@ -140,7 +140,7 @@ function addEventListeners(){
 	  var event = "pause";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos +  "\n";
+	  outE = outE + currentTime + "#" + infos +  "\n";
 	});
 
 	player.addEventListener("ended", function()
@@ -148,7 +148,7 @@ function addEventListeners(){
 	  var event = "ended";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("stalled", function() 
@@ -156,7 +156,7 @@ function addEventListeners(){
 	  var event = "stalled";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("waiting", function() 
@@ -164,7 +164,7 @@ function addEventListeners(){
 	  var event = "waiting";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("abort", function() 
@@ -172,7 +172,7 @@ function addEventListeners(){
 	  var event = "abort";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("emptied", function() 
@@ -180,7 +180,7 @@ function addEventListeners(){
 	  var event = "emptied";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("error", function() 
@@ -188,7 +188,7 @@ function addEventListeners(){
 	  var event = "error";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos + "\n";
+	  outE = outE + currentTime + "#" + infos + "\n";
 	});
 
 	player.addEventListener("suspend", function() 
@@ -196,7 +196,7 @@ function addEventListeners(){
 	  var event = "suspend";
 	  var infos = event;
 	  var currentTime = new Date().getTime();
-	  outE = outE + currentTime + ";" + infos +  "\n";
+	  outE = outE + currentTime + "#" + infos +  "\n";
 	});
 }
 

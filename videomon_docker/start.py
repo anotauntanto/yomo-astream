@@ -83,6 +83,7 @@ EXPCONFIG = {
   "cnf_astream_server_host": "",                   # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "",                   # REQUIRED PARAMETER; Port to connect to for astream
   "cnf_yomo_playback_duration_s": -1,              # Nominal duration for the youyube video playback
+  "cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
   "cnf_additional_results": True                   # Whether or not to tar additional log files
@@ -280,7 +281,7 @@ def run_exp(meta_info, expconfig):
         ifname=meta_info[expconfig["modeminterfacename"]]
 
         print('Pseudo-running AStream')# and AStream')
-        #run_yomo(cfg['cnf_video_id'],300,prefix_yomo)
+        #run_yomo(cfg['cnf_video_id'],300,prefix_yomo,bitrates)  #TODO 
         server_host="128.39.37.161"
         server_port="8080"
         #video_id="BigBuckBunny_4s"
