@@ -77,7 +77,7 @@ EXPCONFIG = {
   "timestamp": time.gmtime(),
 
   # These values are specific for this experiment
-  "cnf_video_id": "pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
+  "cnf_video_id": "D8VXDSMyuMk", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
   "cnf_astream_algorithm": "Basic",              # Playback type in astream
   "cnf_astream_download": False,                    # Download option for AStream
   "cnf_astream_segment_limit": 150,                 # Segment limit option for AStream
@@ -282,8 +282,8 @@ def run_exp(meta_info, expconfig):
         ifname=meta_info[expconfig["modeminterfacename"]]
 
         print('Pseudo-running YoMo')# and AStream')
-        bitrates="1,2,3,4,5,6,7,8,9,10"
-        out_yomo=run_yomo(cfg['cnf_video_id'],300,prefix_yomo,bitrates)  #TODO
+        bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
+        out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates)  #TODO
 
         server_host="128.39.37.161"
         server_port="8080"

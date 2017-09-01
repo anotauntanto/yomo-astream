@@ -8,7 +8,7 @@ import time
 import datetime
 import sys
 import random
-import psutil
+#import psutil
 import numpy as np
 
 import monroe_exporter
@@ -22,15 +22,15 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, interf, bitrates):
+def run_yomo(ytid, duration, prefix, bitrates):
 
 	# Write output without buffering
 	sys.stdout.flush()
 	sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-	# Start tShark
-	callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
-	call(callTshark, shell=True)
+	## Start tShark
+	#callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
+	#call(callTshark, shell=True)
 
 	# Start display
 	display = Display(visible=0, size=(1920, 1080)) #display size has to be cutomized 1920, 1080
@@ -92,9 +92,9 @@ def run_yomo(ytid, duration, prefix, interf, bitrates):
 	display.stop()
 	print time.time(), 'display stopped'
 	
-	# Kill Tshark
-	me = os.getpid()
-	kill_proc_tree(me)
+	## Kill Tshark
+	#me = os.getpid()
+	#kill_proc_tree(me)
 
 	# Calculate output
 	out = getOutput(bitrates)
