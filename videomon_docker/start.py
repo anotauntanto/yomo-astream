@@ -51,7 +51,7 @@ EXPCONFIG = {
   "dataversion": 2,
   "dataid": "MONROE.EXP.VIDEO",
   "nodeid": "fake.nodeid",
-  "meta_grace": 120,                              # Grace period to wait for interface metadata
+  "meta_grace": 10,                              # Grace period to wait for interface metadata
   "exp_grace": 600,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
   "time_between_experiments": 0,
@@ -69,7 +69,8 @@ EXPCONFIG = {
                           "wwan1",
                           "wwan2",
                           "op0",
-                          "op1"
+                          "op1",
+                          "docker0"
                           ],                      # Interfaces to NOT run the experiment on
   "interfaces_without_metadata": ["eth0",
                                   "wlan0"],       # Manual metadata on these IF
@@ -280,21 +281,30 @@ def run_exp(meta_info, expconfig):
 
         ifname=meta_info[expconfig["modeminterfacename"]]
 
-        print('Pseudo-running AStream')# and AStream')
-        #run_yomo(cfg['cnf_video_id'],300,prefix_yomo,bitrates)  #TODO 
+        print('Pseudo-running YoMo')# and AStream')
+        bitrates="1,2,3,4,5,6,7,8,9,10"
+        out_yomo=run_yomo(cfg['cnf_video_id'],300,prefix_yomo,bitrates)  #TODO
+
         server_host="128.39.37.161"
         server_port="8080"
         #video_id="BigBuckBunny_4s"
 
         #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-        run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-        print cfg['cnf_add_to_result']
+        #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+        #out_astream=run_astream("BigBuckBunny_4s",server_host,server_port,"basic",10,cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+
+
+        #print cfg['cnf_add_to_result']
+        print out_yomo
+
+        #TODO: find a way to write summary results into summary JSON
         towrite_data=dict()
-        towrite_data['TEMPOUTPUT'] = cfg['cnf_add_to_result']
+        #towrite_data['TEMPOUTPUT'] = cfg['cnf_add_to_result']
+        towrite_data['TEMPOUTPUT'] = out_yomo
         towrite_file='/monroe/results/temp_log.json'
         write_json(towrite_data,towrite_file)
 
-        #TODO: find a way to write summary results into summary JSON
+
 
     except Exception as e:
         if cfg['verbosity'] > 0:
