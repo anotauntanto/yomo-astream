@@ -10,8 +10,7 @@
 Simple wrapper to run the yomo-astream client.
 The script will execute one experiment (one video, two playbacks) for each of the enabled interfaces.
 All default values are configurable from the scheduler.
-The output will be formatted into a JSON object suitable for storage in the
-MONROE db.
+The output will be formatted into a JSON object suitable for storage in the MONROE db.
 """
 
 from collections import OrderedDict
@@ -60,7 +59,8 @@ EXPCONFIG = {
   "modeminterfacename": "InternalInterface",
   "save_metadata_topic": "MONROE.META",
   "save_metadata_resultdir": None,                # set to a dir to enable saving of metadata
-  "add_modem_metadata_to_result": True,          # set to True to add one captured modem metadata to nettest result
+  "add_modem_metadata_to_result": False,          # set to True to add one captured modem metadata to nettest result
+  "enabled_interfaces":["eth0"],
   "disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
@@ -84,14 +84,13 @@ EXPCONFIG = {
   "cnf_astream_server_host": "",                   # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "",                   # REQUIRED PARAMETER; Port to connect to for astream
   "cnf_yomo_playback_duration_s": -1,              # Nominal duration for the youyube video playback
-  "cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
   "cnf_additional_results": True                   # Whether or not to tar additional log files
+  #"cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
   #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
   #"cnf_file_astream": "{time}_{ytid}_astream"      # Prefix for AStream logs
-  #"enabled_interfaces": ["op0"],                  # Interfaces to run the experiment on
   #"cnf_require_modem_metadata": {"DeviceMode": 4},# only run if in LTE (5) or UMTS (4)
   #"cnf_ping_": ,                                  # TODO
   #"cnf_log_granularity": 10000,                   # TODO
@@ -111,14 +110,15 @@ EXPCONFIG = {
 
 # Helper functions
 def get_filename(data, postfix, ending, tstamp):
-    return "{}_{}_{}_{}{}.{}".format(data['dataid'], data['cnf_video_id'], tstamp,
+    return "{}_{}_{}{}.{}".format(data['dataid'], data['cnf_video_id'], tstamp,
         ("_" + postfix) if postfix else "", ending)
 
 def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outdir="/monroe/results/"):
     f = NamedTemporaryFile(mode='w+', delete=False, dir=outdir)
     f.write(msg)
     f.close()
-    outfile = path.join(outdir, get_filename(data, postfix, ending, tstamp))
+    mfilename=get_filename(data, postfix, ending, tstamp)
+    outfile = os.path.join(outdir, mfilename) #get_filename(data, postfix, ending, tstamp))
     move_file(f.name, outfile)
 
 def move_file(f, t):
@@ -248,8 +248,8 @@ def run_exp(meta_info, expconfig):
             "NodeId": cfg['nodeid'],
             "Iccid": meta_info["ICCID"],
             "Operator": meta_info["Operator"],
-            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
-            "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
+            "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
+            "cnf_astream_server_host": cfg['cnf_astream_server_host']
         })
         print('DBG: testpoint2')
 
@@ -273,17 +273,40 @@ def run_exp(meta_info, expconfig):
         #TODO: construct filename prefixes for YoMo and AStream
 
         prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
-        prefix_yomo=cfg['dataid']+'_'+prefix_timestamp+'_yomo_'
-        prefix_astream=cfg['dataid']+'_'+prefix_timestamp+'_astream_'
+        prefix_yomo=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_yomo_'
+        prefix_astream=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_astream_'
 
         print('Prefix for YoMo:'+prefix_yomo)
         print('Prefix for AStream:'+prefix_astream)
+
+        #TODO: run tools and write results into summary JSON
+
+        #towrite_data=dict()
+        #towrite_data['TEMPOUTPUT'] = 'temporary output'
+        towrite_data = cfg['cnf_add_to_result']
+        #print(towrite_data)
 
         ifname=meta_info[expconfig["modeminterfacename"]]
 
         print('Pseudo-running YoMo')# and AStream')
         bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
-        out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates)  #TODO
+
+        try:
+            out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates)  #TODO
+
+            print out_yomo
+
+            towrite_data[0]['TEMPOUTPUT_YoMo'] = out_yomo
+
+            #towrite_file='/monroe/results/temp_log.json'
+            #write_json(towrite_data,towrite_file)
+
+
+        except Exception as e:
+            if cfg['verbosity'] > 0:
+                print ("Execution or parsing failed for error: {}").format(e)
+
+        save_output(data=cfg, msg=json.dumps(towrite_data), tstamp=prefix_timestamp, outdir=cfg['resultdir'])
 
         server_host="128.39.37.161"
         server_port="8080"
@@ -292,18 +315,6 @@ def run_exp(meta_info, expconfig):
         #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
         #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
         #out_astream=run_astream("BigBuckBunny_4s",server_host,server_port,"basic",10,cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-
-
-        #print cfg['cnf_add_to_result']
-        print out_yomo
-
-        #TODO: find a way to write summary results into summary JSON
-        towrite_data=dict()
-        #towrite_data['TEMPOUTPUT'] = cfg['cnf_add_to_result']
-        towrite_data['TEMPOUTPUT'] = out_yomo
-        towrite_file='/monroe/results/temp_log.json'
-        write_json(towrite_data,towrite_file)
-
 
 
     except Exception as e:
@@ -332,6 +343,7 @@ if __name__ == '__main__':
 
     # Short hand variables and check so we have all variables we need
     try:
+        enabled_interfaces = EXPCONFIG['enabled_interfaces']
         disabled_interfaces = EXPCONFIG['disabled_interfaces']
         if_without_metadata = EXPCONFIG['interfaces_without_metadata']
         meta_grace = EXPCONFIG['meta_grace']
@@ -351,7 +363,7 @@ if __name__ == '__main__':
     #TODO
 
     tot_start_time = time.time()
-    for ifname in netifaces.interfaces():
+    for ifname in enabled_interfaces: #netifaces.interfaces():
         # Skip disabled interfaces
         if ifname in disabled_interfaces:
             if EXPCONFIG['verbosity'] > 1:

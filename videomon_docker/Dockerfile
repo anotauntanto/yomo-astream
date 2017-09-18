@@ -19,6 +19,7 @@ RUN echo "install lspci" \
 RUN echo "install numpy"
 RUN apt-get update
 RUN apt-get install -y libblas-dev liblapack-dev liblapacke-dev gfortran
+RUN easy_install pip
 RUN pip install --upgrade pip
 RUN pip install numpy
 

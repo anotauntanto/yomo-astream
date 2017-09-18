@@ -1,55 +1,25 @@
 {
-  # The following value are specific to the monroe platform
-  "guid": "no.guid.in.config.file",               # Should be overridden by scheduler
-  "zmqport": "tcp://172.17.0.1:5556",
-  "modem_metadata_topic": "MONROE.META.DEVICE.MODEM",
-  "dataversion": 2,
-  "dataid": "MONROE.EXP.NETTEST",
-  "nodeid": "fake.nodeid",
-  "meta_grace": 120,                              # Grace period to wait for interface metadata
-  "exp_grace": 300,                               # Grace period before killing experiment
-  "ifup_interval_check": 3,                       # Interval to check if interface is up
-  "time_between_experiments": 0,
-  "verbosity": 2,                                 # 0 = "Mute", 1=error, 2=Information, 3=verbose
-  "resultdir": "/monroe/results/",
-  "modeminterfacename": "InternalInterface",
-  "save_metadata_topic": "MONROE.META",
-  "save_metadata_resultdir": None,                # set to a dir to enable saving of metadata
-  "add_modem_metadata_to_result": False,          # set to True to add one captured modem metadata to nettest result
-  #"traceroute_resultdir": "/monroe/results/",     # set to a dir to enable traceroute before nettest
-  "disabled_interfaces": ["lo",
+“enabled_interfaces": [“eth0”,
+"disabled_interfaces": ["lo",
                           "metadata",
-                          "eth0",
-                          "wlan0"
-  ],                      # Interfaces to NOT run the experiment on
-  "enabled_interfaces": ["op0"],  # Interfaces to run the experiment on
-  "interfaces_without_metadata": ["eth0",
-                                  "wlan0"],       # Manual metadata on these IF
-
-  # These values are specific for this experiment; defaults:
-  "cnf_astream_algorithm": "",         # REQUIRED PARAMETER; Playback type in astream
-  "cnf_astream_server_host": "",       # REQUIRED PARAMETER; Host/IP to connect to for astream
-  "cnf_astream_server_port": ,         # REQUIRED PARAMETER; Port to connect to for astream
-  "cnf_yomo_playback_duration_s": -1,  # nominal duration for the youyube video playback
-  #"cnf_rtt_tcp_payload_num": 11,        # number of tcp rtt measurements
-  "cnf_wait_time_s_algorithms": 20,             # time to wait for downlink measurement to finish after nominal time
-  "cnf_wait_time_s_videos": 20,             # time to wait for uplink measurement to finish after nominal time
-  #"cnf_log": 10000, # = 10ms; how often to collect tcp_info
-  "tar_additional_results": True        # tar additional logfiles
-  "cnf_file_database_output": "{time}_{ytid}_summary.json",
-  "cnf_file_yomo": "{time}_{ytid}_yomo_{logtype}",
-  "cnf_file_astream": "{time}_{ytid}_astream_{logtype}"
-
-  #"multi_config_randomize": False,      # Randomize the muliple runs by "multi_config", has no effect without "multi_config" (see below)
-  #"multi_config": [
-  #  [
-  #    { "cnf_dl_num_flows": 1, "cnf_ul_num_flows": 1 },
-  #    { "cnf_dl_num_flows": 3, "cnf_ul_num_flows": 3 },
-  #    { "cnf_dl_num_flows": 4, "cnf_ul_num_flows": 4 },
-  #    { "cnf_dl_num_flows": 5, "cnf_ul_num_flows": 5 },
-  #    { "cnf_dl_num_flows": 7, "cnf_ul_num_flows": 7 },
-  #    { "cnf_dl_num_flows": 9, "cnf_ul_num_flows": 9 },
-  #  ],
-  #  [ {"cnf_server_host": "A"}, {"cnf_server_host": "B"}]
-  #],
+                          "eth2",
+                          "wlan0",
+                          "wwan0",
+                          "wwan1",
+                          "wwan2",
+                          "op0",
+                          "op1",
+                          "docker0"
+                          ],
+  "cnf_video_id": "pJ8HFgPKiZE",
+  "cnf_astream_algorithm": "Basic",
+  "cnf_astream_download": False,
+  "cnf_astream_segment_limit": 150,
+  "cnf_astream_server_host": "",
+  "cnf_astream_server_port": "",
+  "cnf_yomo_playback_duration_s": 10,
+  "cnf_yomo_bitrates_KBs": "",
+  "cnf_wait_btw_algorithms_s": 20,
+  "cnf_wait_btw_videos_s": 20,
+  "cnf_additional_results": True
   }
