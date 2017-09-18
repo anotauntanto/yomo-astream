@@ -7,9 +7,7 @@ RUN  echo "export HOME=/" \
 
 RUN echo "install additional packages" \
         && apt-get update \
-        && export DEBIAN_FRONTEND=noninteractive \
-        && apt-get update -q \
-        && apt-get install -q -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" tshark 
+        && export DEBIAN_FRONTEND=noninteractive
 
 RUN echo "install dstat" \
         && apt-get install -q -y dstat
