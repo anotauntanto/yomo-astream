@@ -1,6 +1,6 @@
 {
-“enabled_interfaces": [“eth0”,
-"disabled_interfaces": ["lo",
+“enabled_interfaces": [“op0”],
+"disabled_interfaces": [“eth0”,”lo",
                           "metadata",
                           "eth2",
                           "wlan0",

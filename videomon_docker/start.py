@@ -77,6 +77,7 @@ EXPCONFIG = {
   "timestamp": time.gmtime(),
 
   # These values are specific for this experiment
+  "cnf_debug": True,
   "cnf_video_id": "D8VXDSMyuMk", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
   "cnf_astream_algorithm": "Basic",              # Playback type in astream
   "cnf_astream_download": False,                    # Download option for AStream
@@ -117,8 +118,8 @@ def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outd
     f = NamedTemporaryFile(mode='w+', delete=False, dir=outdir)
     f.write(msg)
     f.close()
-    mfilename=get_filename(data, postfix, ending, tstamp)
-    outfile = os.path.join(outdir, mfilename) #get_filename(data, postfix, ending, tstamp))
+    #mfilename=get_filename(data, postfix, ending, tstamp)
+    outfile = os.path.join(outdir, get_filename(data, postfix, ending, tstamp))
     move_file(f.name, outfile)
 
 def move_file(f, t):
@@ -249,7 +250,10 @@ def run_exp(meta_info, expconfig):
             "Iccid": meta_info["ICCID"],
             "Operator": meta_info["Operator"],
             "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
-            "cnf_astream_server_host": cfg['cnf_astream_server_host']
+            "Interface": cfg['modeminterfacename'],
+            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
+            "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
+            "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit']
         })
         print('DBG: testpoint2')
 
@@ -276,8 +280,8 @@ def run_exp(meta_info, expconfig):
         prefix_yomo=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_yomo_'
         prefix_astream=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_astream_'
 
-        print('Prefix for YoMo:'+prefix_yomo)
-        print('Prefix for AStream:'+prefix_astream)
+        print('Prefix for YoMo: '+prefix_yomo)
+        print('Prefix for AStream: '+prefix_astream)
 
         #TODO: run tools and write results into summary JSON
 
@@ -306,6 +310,8 @@ def run_exp(meta_info, expconfig):
             if cfg['verbosity'] > 0:
                 print ("Execution or parsing failed for error: {}").format(e)
 
+        towrite_data['Interface']=ifname
+        print(towrite_data)
         save_output(data=cfg, msg=json.dumps(towrite_data), tstamp=prefix_timestamp, outdir=cfg['resultdir'])
 
         server_host="128.39.37.161"
@@ -364,6 +370,7 @@ if __name__ == '__main__':
 
     tot_start_time = time.time()
     for ifname in enabled_interfaces: #netifaces.interfaces():
+        print(ifname)
         # Skip disabled interfaces
         if ifname in disabled_interfaces:
             if EXPCONFIG['verbosity'] > 1:
