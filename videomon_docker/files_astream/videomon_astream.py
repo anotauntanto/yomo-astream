@@ -347,3 +347,5 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     config_dash.LOG.info("Finished {} after {}".format(ifname, elapsed))
     time.sleep(wait_after_exp_s)
     config_dash.LOG.info("Exiting")
+
+    return "Fake output from AStream"
