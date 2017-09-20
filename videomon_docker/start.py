@@ -80,8 +80,8 @@ EXPCONFIG = {
   "cnf_debug": True,
   "cnf_video_id": "D8VXDSMyuMk", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
   "cnf_astream_algorithm": "Basic",              # Playback type in astream
-  "cnf_astream_download": False,                    # Download option for AStream
-  "cnf_astream_segment_limit": 150,                 # Segment limit option for AStream
+  "cnf_astream_download": "False",                    # Download option for AStream
+  "cnf_astream_segment_limit": 5,                 # Segment limit option for AStream
   "cnf_astream_server_host": "",                   # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "",                   # REQUIRED PARAMETER; Port to connect to for astream
   "cnf_yomo_playback_duration_s": -1,              # Nominal duration for the youyube video playback
@@ -253,7 +253,8 @@ def run_exp(meta_info, expconfig):
             "Interface": cfg['modeminterfacename'],
             "cnf_astream_server_host": cfg['cnf_astream_server_host'],
             "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
-            "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit']
+            "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
+            "cnf_video_id": cfg['cnf_video_id']
         })
         print('DBG: testpoint2')
 
@@ -296,14 +297,22 @@ def run_exp(meta_info, expconfig):
         bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
 
         try:
-            out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates)  #TODO
-
-            print out_yomo
-
-            towrite_data[0]['TEMPOUTPUT_YoMo'] = out_yomo
+            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates)  #TODO
+            #print out_yomo
+            #towrite_data[0]['TEMPOUTPUT_YoMo'] = out_yomo
 
             #towrite_file='/monroe/results/temp_log.json'
             #write_json(towrite_data,towrite_file)
+
+            server_host="128.39.37.161"
+            server_port="12345"
+            video_id="BigBuckBunny_4s"
+
+            run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
+            #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+            #out_astream=run_astream("BigBuckBunny_4s",server_host,server_port,"basic",10,cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+
+
 
 
         except Exception as e:
@@ -311,17 +320,8 @@ def run_exp(meta_info, expconfig):
                 print ("Execution or parsing failed for error: {}").format(e)
 
         towrite_data['Interface']=ifname
-        print(towrite_data)
+        #print(towrite_data)
         save_output(data=cfg, msg=json.dumps(towrite_data), tstamp=prefix_timestamp, outdir=cfg['resultdir'])
-
-        server_host="128.39.37.161"
-        server_port="8080"
-        #video_id="BigBuckBunny_4s"
-
-        #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-        #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-        #out_astream=run_astream("BigBuckBunny_4s",server_host,server_port,"basic",10,cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-
 
     except Exception as e:
         if cfg['verbosity'] > 0:

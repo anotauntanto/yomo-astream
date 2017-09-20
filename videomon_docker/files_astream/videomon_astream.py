@@ -41,8 +41,8 @@ import subprocess
 MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
 DOWNLOAD_CHUNK = 1024
 DOWNLOAD = False
-SEGMENT_LIMIT = 100
-exp_grace = 120
+#SEGMENT_LIMIT = 100
+#exp_grace = 120
 ifup_interval_check = 5
 wait_after_exp_s = 5
 
@@ -59,7 +59,7 @@ class DashPlayback:
         self.audio = dict()
         self.video = dict()
 
-def start_playback_smart(dash_player, dp_object, domain, playback_type=None, download=False, video_segment_duration=None, ifname=None):
+def start_playback_smart(dash_player, dp_object, domain, playback_type=None, download=False, video_segment_duration=None, ifname=None, SEGMENT_LIMIT=100):
     """ Module that downloads the MPD-FIle and download
         all the representations of the Module to download
         the MPEG-DASH media.
@@ -72,7 +72,7 @@ def start_playback_smart(dash_player, dp_object, domain, playback_type=None, dow
                                 2. 'SARA' - Segment Aware Rate Adaptation
                                 3. 'NETFLIX' - Buffer based adaptation used by Netflix
         :param download: Set to True if the segments are to be stored locally (Boolean). Default False
-        :param video_segment_duration: Playback duratoin of each segment
+        :param video_segment_duration: Playback duration of each segment
         :return:
     """
     # Initialize the DASH buffer
@@ -251,8 +251,8 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     print("DBG: testpoint run_astream")
     #subprocess.call("./run_tshark.sh")
 
-    mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
-    #mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
+    #mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
+    mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
     print mpd
 
     # create the log files
@@ -315,13 +315,13 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
                 start_playback_all(dp_object, domain)
         elif "basic" in playback_type.lower():
             config_dash.LOG.critical("Started Basic-DASH Playback")
-            start_playback_smart(dash_player, dp_object, domain, "BASIC", download, video_segment_duration, ifname)
+            start_playback_smart(dash_player, dp_object, domain, "BASIC", download, video_segment_duration, ifname, segment_limit)
         elif "sara" in playback_type.lower():
             config_dash.LOG.critical("Started SARA-DASH Playback")
-            start_playback_smart(dash_player, dp_object, domain, "SMART", download, video_segment_duration, ifname)
+            start_playback_smart(dash_player, dp_object, domain, "SMART", download, video_segment_duration, ifname, segment_limit)
         elif "netflix" in playback_type.lower():
             config_dash.LOG.critical("Started Netflix-DASH Playback")
-            start_playback_smart(dash_player, dp_object, domain, "NETFLIX", download, video_segment_duration, ifname)
+            start_playback_smart(dash_player, dp_object, domain, "NETFLIX", download, video_segment_duration, ifname, segment_limit)
         else:
             config_dash.LOG.error("Unknown Playback parameter {}".format(playback_type))
             return None
