@@ -5,23 +5,20 @@ MAINTAINER VideoMon
 RUN  echo "export HOME=/" \
 		&& export HOME=/ 
 
-RUN echo "install additional packages" \
-        && apt-get update \
-        && export DEBIAN_FRONTEND=noninteractive
-
 RUN echo "install dstat" \
+        && apt-get update -q \
         && apt-get install -q -y dstat
 
-RUN echo "install lspci" \
+RUN echo "install pciutils" \
         && export DEBIAN_FRONTEND=noninteractive \
 		&& apt-get install -q -y pciutils
 
-RUN echo "install numpy"
-RUN apt-get update
+RUN echo "install numpy and psutil"
+RUN apt-get update -q
 RUN apt-get install -y libblas-dev liblapack-dev liblapacke-dev gfortran
-RUN easy_install pip
-RUN pip install --upgrade pip
+RUN apt-get install -y python-pip 
 RUN pip install numpy
+RUN pip install psutil
 
 COPY start.py /opt/monroe/
 COPY files_yomo /opt/monroe/

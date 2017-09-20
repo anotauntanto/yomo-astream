@@ -8,7 +8,7 @@ import time
 import datetime
 import sys
 import random
-#import psutil
+import psutil
 import numpy as np
 
 import monroe_exporter
@@ -29,8 +29,8 @@ def run_yomo(ytid, duration, prefix, bitrates):
 	sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 	## Start tShark
-	#callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
-	#call(callTshark, shell=True)
+	callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
+	call(callTshark, shell=True)
 
 	# Start display
 	display = Display(visible=0, size=(1920, 1080)) #display size has to be cutomized 1920, 1080
@@ -62,21 +62,18 @@ def run_yomo(ytid, duration, prefix, bitrates):
 		print time.time(), ' start video ', ytid
 		browser.get(url)
 		browser.execute_script(js)
-		if (duration < 0):
-			duration = browser.execute_script('return document.getElementsByTagName("video")[0].duration;')*bufferFactor
 		time.sleep(duration)
 		print "video playback ended"
 
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
 
-		f = open('/monroe/results/' + prefix + '_' + 'buffer.txt', 'w')
-		f.write(out)
-		f.close
+		with open('/monroe/results/' + prefix + '_buffer.txt', 'w') as f:
+			f.write(out)
 
-		f2 = open('/monroe/results/' + prefix + '_' + 'events.txt', 'w')
-		f2.write(outE.encode("UTF-8"))
-		f2.close
+		with open('/monroe/results/' + prefix + '_events.txt', 'w') as f:
+			f.write(outE.encode("UTF-8"))
+
 
 		browser.close()
 		print time.time(), ' finished firefox'
@@ -93,8 +90,8 @@ def run_yomo(ytid, duration, prefix, bitrates):
 	print time.time(), 'display stopped'
 	
 	## Kill Tshark
-	#me = os.getpid()
-	#kill_proc_tree(me)
+	me = os.getpid()
+	kill_proc_tree(me)
 
 	# Calculate output
 	out = getOutput(bitrates)
