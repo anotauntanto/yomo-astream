@@ -90,8 +90,7 @@ def run_yomo(ytid, duration, prefix, bitrates):
 	print time.time(), 'display stopped'
 	
 	## Kill Tshark
-	me = os.getpid()
-	kill_proc_tree(me)
+	sys.exit(0)
 
 	# Calculate output
 	out = getOutput(bitrates)
