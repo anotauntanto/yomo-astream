@@ -1,6 +1,6 @@
 {
-“enabled_interfaces": [“op0”],
-"disabled_interfaces": [“eth0”,”lo",
+"enabled_interfaces": ["eth0"],
+"disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
                           "wlan0",
@@ -13,7 +13,7 @@
                           ],
   "cnf_video_id": "pJ8HFgPKiZE",
   "cnf_astream_algorithm": "Basic",
-  "cnf_astream_download": “False”,
+  "cnf_astream_download": False,
   "cnf_astream_segment_limit": 10,
   "cnf_astream_server_host": "",
   "cnf_astream_server_port": "",
