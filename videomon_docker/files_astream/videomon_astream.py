@@ -10,7 +10,6 @@
 # Developed for use by the EU H2020 MONROE project
 
 
-
 """
 Simple experiment template to collect metdata and run an experiment.
 
@@ -47,7 +46,6 @@ DOWNLOAD = False
 #exp_grace = 120
 ifup_interval_check = 5
 wait_after_exp_s = 5
-
 
 class DashPlayback:
     """

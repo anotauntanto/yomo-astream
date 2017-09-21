@@ -257,7 +257,9 @@ def run_exp(meta_info, expconfig):
             "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
             "cnf_video_id": cfg['cnf_video_id'],
             "TEMPOUTPUT_AStream": "NA",
-            "TEMPOUTPUT_YoMo": "NA"
+            "TEMPOUTPUT_YoMo": "NA",
+            "NodeId": cfg['nodeid',
+            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]]
         })
         print('DBG: testpoint2')
 
@@ -297,14 +299,17 @@ def run_exp(meta_info, expconfig):
         ifname=meta_info[expconfig["modeminterfacename"]]
 
         print('Pseudo-running AStream')
-        bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
+        #bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
+        bitrates="144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167"
 
         try:
 
             #PART I - YoMo
-            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname)
-            #print out_yomo
-            #towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
+            out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname)
+            print(out_yomo)
+
+            #TODO: parse output before writing to summary JSON
+            towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
 
             #PART II - AStream
             server_host="128.39.37.161"
@@ -313,9 +318,9 @@ def run_exp(meta_info, expconfig):
 
             #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
             #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            print(out_astream)
-            towrite_data['TEMPOUTPUT_AStream']=out_astream
+            #out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+            #print(out_astream)
+            #towrite_data['TEMPOUTPUT_AStream']=out_astream
 
         except Exception as e:
             if cfg['verbosity'] > 0:
