@@ -79,12 +79,12 @@ EXPCONFIG = {
   # These values are specific for this experiment
   "cnf_debug": True,
   "cnf_video_id": "D8VXDSMyuMk", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
-  "cnf_astream_algorithm": "Basic",              # Playback type in astream
-  "cnf_astream_download": "False",                    # Download option for AStream
-  "cnf_astream_segment_limit": 5,                 # Segment limit option for AStream
+  "cnf_astream_algorithm": "Basic",                # Playback type in astream
+  "cnf_astream_download": False,                   # Download option for AStream
+  "cnf_astream_segment_limit": 2,                  # Segment limit option for AStream
   "cnf_astream_server_host": "",                   # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "",                   # REQUIRED PARAMETER; Port to connect to for astream
-  "cnf_yomo_playback_duration_s": -1,              # Nominal duration for the youyube video playback
+  "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the youyube video playback
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
   "cnf_additional_results": True                   # Whether or not to tar additional log files
@@ -120,6 +120,7 @@ def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outd
     f.close()
     #mfilename=get_filename(data, postfix, ending, tstamp)
     outfile = os.path.join(outdir, get_filename(data, postfix, ending, tstamp))
+    #print(outfile)
     move_file(f.name, outfile)
 
 def move_file(f, t):
@@ -167,7 +168,7 @@ def metadata(meta_ifinfo, ifname, expconfig):
                     tstamp = msg['Timestamp']
                 if expconfig['verbosity'] > 2:
                     print(msg)
-                save_output(data=msg, msg=json.dumps(msg), tstamp=tstamp, outdir=expconfig['save_metadata_resultdir'])
+                save_output(data=msg, msg=json.dumps(msg), postfix='summary', tstamp=tstamp, outdir=expconfig['save_metadata_resultdir'])
 
             if topic.startswith(expconfig['modem_metadata_topic']):
                 if (expconfig["modeminterfacename"] in msg and
@@ -254,7 +255,9 @@ def run_exp(meta_info, expconfig):
             "cnf_astream_server_host": cfg['cnf_astream_server_host'],
             "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
             "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
-            "cnf_video_id": cfg['cnf_video_id']
+            "cnf_video_id": cfg['cnf_video_id'],
+            "TEMPOUTPUT_AStream": "NA",
+            "TEMPOUTPUT_YoMo": "NA"
         })
         print('DBG: testpoint2')
 
@@ -293,27 +296,26 @@ def run_exp(meta_info, expconfig):
 
         ifname=meta_info[expconfig["modeminterfacename"]]
 
-        print('Pseudo-running YoMo')# and AStream')
+        print('Pseudo-running AStream')
         bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
 
         try:
-            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates)  #TODO
+
+            #PART I - YoMo
+            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname)
             #print out_yomo
-            #towrite_data[0]['TEMPOUTPUT_YoMo'] = out_yomo
+            #towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
 
-            #towrite_file='/monroe/results/temp_log.json'
-            #write_json(towrite_data,towrite_file)
-
+            #PART II - AStream
             server_host="128.39.37.161"
             server_port="12345"
             video_id="BigBuckBunny_4s"
 
-            run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
+            #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
             #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            #out_astream=run_astream("BigBuckBunny_4s",server_host,server_port,"basic",10,cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-
-
-
+            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+            print(out_astream)
+            towrite_data['TEMPOUTPUT_AStream']=out_astream
 
         except Exception as e:
             if cfg['verbosity'] > 0:
@@ -321,7 +323,9 @@ def run_exp(meta_info, expconfig):
 
         towrite_data['Interface']=ifname
         #print(towrite_data)
-        save_output(data=cfg, msg=json.dumps(towrite_data), tstamp=prefix_timestamp, outdir=cfg['resultdir'])
+        #towrite_file='/monroe/results/temp_log.json'
+        #write_json(towrite_data,towrite_file)
+        save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'])
 
     except Exception as e:
         if cfg['verbosity'] > 0:

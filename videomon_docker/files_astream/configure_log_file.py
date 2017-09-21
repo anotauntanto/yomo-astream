@@ -20,7 +20,8 @@ def configure_log_file(playback_type="", log_file=config_dash.LOG_FILENAME):
     config_dash.LOG.addHandler(handler1)
     # Add the handler to for the file if present
     if log_file:
-        log_filename = "_".join((log_file,playback_type, strftime('%Y-%m-%d.%H_%M_%S.log')))
+        #log_filename = "_".join((log_file,playback_type, strftime('%Y-%m-%d.%H_%M_%S.log')))
+        log_filename = log_file
         print("Configuring log file: {}".format(log_filename))
         handler2 = logging.FileHandler(filename=log_filename)
         handler2.setFormatter(log_formatter)

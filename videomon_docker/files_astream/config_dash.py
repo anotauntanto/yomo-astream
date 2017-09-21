@@ -28,22 +28,28 @@ LOG_LEVEL = None
 
 # Set '-' to print to screen
 # LOG_FOLDER = "ASTREAM_LOGS/"
-LOG_FOLDER = "tmp" #"/monroe/results/"
+LOG_FOLDER = "/monroe/results/"
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
-LOG_FILENAME = os.path.join(LOG_FOLDER, 'DASH_RUNTIME_LOG')
+#LOG_FILENAME = os.path.join(LOG_FOLDER, 'DASH_RUNTIME_LOG')
+LOG_FILENAME = os.path.join(LOG_FOLDER, '_runtime.log')
+
 # Logs related to the statistics for the video
 # PLAYBACK_LOG_FILENAME = os.path.join(LOG_FOLDER, strftime('DASH_PLAYBACK_LOG_%Y-%m-%d.%H_%M_%S.csv'))
 # Buffer logs created by dash_buffer.py
 # AEL -- need to create different logs for each run of the dash player -- initialize the names of the logs with the LOG_FILENAME ??????
-BUFFER_LOG_FILENAME = os.path.join(LOG_FOLDER, strftime('DASH_BUFFER_LOG_%Y-%m-%d.%H_%M_%S.csv'))
+
+#BUFFER_LOG_FILENAME = os.path.join(LOG_FOLDER, strftime('DASH_BUFFER_LOG_%Y-%m-%d.%H_%M_%S.csv'))
+BUFFER_LOG_FILENAME = os.path.join(LOG_FOLDER, strftime('_buffer.csv'))
 #BUFFER_LOG_FILENAME = os.path.join(LOG_FOLDER, 'DASH_BUFFER_LOG')
 LOG_FILE_HANDLE = None
 # To be set by configure_log_file.py
 LOG = None
 # JSON Filename
-JSON_LOG = os.path.join(LOG_FOLDER, strftime('ASTREAM_%Y-%m-%d.%H_%M_%S.json'))
+
+#JSON_LOG = os.path.join(LOG_FOLDER, strftime('ASTREAM_%Y-%m-%d.%H_%M_%S.json'))
+JSON_LOG = os.path.join(LOG_FOLDER, strftime('_segments.json'))
 #JSON_LOG = os.path.join(LOG_FOLDER, 'ASTREAM')
 
 JSON_HANDLE = dict()

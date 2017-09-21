@@ -23,6 +23,7 @@ The experiment received the target MPD file and the number of segments to downlo
 import io
 import json
 #import zmq
+import os
 import sys
 import netifaces
 import time
@@ -35,7 +36,7 @@ from dash_buffer import *
 from adaptation import basic_dash, basic_dash2, weighted_dash, netflix_dash
 from adaptation.adaptation import WeightedMean
 import subprocess
-#from subprocess import call
+from subprocess import call
 
 # Globals for arg parser with the default values
 MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
@@ -249,6 +250,11 @@ def print_representations(dp_object):
 def run_astream(video_id,server_host,server_port,algorithm,segment_limit,download,ifname,prefix,resultdir):
 
     print("DBG: testpoint run_astream")
+
+    #TODO: start tshark
+    #callTshark = "tshark -n -i " + ifname + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
+    #call(callTshark, shell=True)
+
     #subprocess.call("./run_tshark.sh")
 
     #mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
@@ -257,7 +263,7 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
 
     # create the log files
     playback_type=algorithm.lower()
-    configure_log_file(playback_type=algorithm.lower(), log_file = config_dash.LOG_FILENAME)
+    configure_log_file(playback_type=algorithm.lower(), log_file=config_dash.LOG_FILENAME)
     config_dash.JSON_HANDLE['playback_type'] = algorithm.lower()
     config_dash.LOG.info("Starting AStream container")
     config_dash.LOG.info("Starting Experiment Run on if : {}".format(ifname))
@@ -348,4 +354,36 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     time.sleep(wait_after_exp_s)
     config_dash.LOG.info("Exiting")
 
-    return "Fake output from AStream"
+
+
+    #TODO: rename output files with prefix
+    print("DBG: renaming output files")
+    os.rename('/monroe/results/_buffer.csv', '/monroe/results/' + prefix + '_buffer.csv')
+    os.rename('/monroe/results/_segments.json', '/monroe/results/' + prefix + '_segments.json')
+    os.rename('/monroe/results/_runtime.log', '/monroe/results/' + prefix + '_runtime.log')
+
+    #TODO: prepare output 7xbitrate, 7xbuffer, 1xnumstall, 7xduration
+    out = getOutput(prefix)
+    #print("DBG: getOutput method")
+    #print(out)
+
+    #TODO: kill Tshark
+    #sys.exit(0)
+
+    return out
+    #return "Fake output from AStream"
+
+
+# Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
+def getOutput(prefix):
+	out = calculateBitrate(prefix) + calculateBuffer(prefix) + calculateStallings(prefix)
+	return out
+
+def calculateBitrate(prefix):
+    return "TEMPOUTPUT_bitrate "
+
+def calculateBuffer(prefix):
+    return "TEMPOUTPUT_buffer "
+
+def calculateStallings(prefix):
+    return "TEMPOUTPUT_stallings"
