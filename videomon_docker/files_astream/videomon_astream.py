@@ -37,6 +37,7 @@ from adaptation import basic_dash, basic_dash2, weighted_dash, netflix_dash
 from adaptation.adaptation import WeightedMean
 import subprocess
 from subprocess import call
+import numpy
 
 # Globals for arg parser with the default values
 MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
@@ -354,16 +355,14 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     time.sleep(wait_after_exp_s)
     config_dash.LOG.info("Exiting")
 
-
-
     #TODO: rename output files with prefix
     print("DBG: renaming output files")
-    os.rename('/monroe/results/_buffer.csv', '/monroe/results/' + prefix + '_buffer.csv')
-    os.rename('/monroe/results/_segments.json', '/monroe/results/' + prefix + '_segments.json')
-    os.rename('/monroe/results/_runtime.log', '/monroe/results/' + prefix + '_runtime.log')
+    os.rename(resultdir + '_buffer.csv', resultdir + prefix + '_buffer.csv')
+    os.rename(resultdir + '_segments.json', resultdir + prefix + '_segments.json')
+    os.rename(resultdir + '_runtime.log', resultdir + prefix + '_runtime.log')
 
     #TODO: prepare output 7xbitrate, 7xbuffer, 1xnumstall, 7xduration
-    out = getOutput(prefix)
+    out = getOutput(resultdir,prefix)
     #print("DBG: getOutput method")
     #print(out)
 
@@ -373,17 +372,48 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     return out
     #return "Fake output from AStream"
 
-
 # Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
-def getOutput(prefix):
-	out = calculateBitrate(prefix) + calculateBuffer(prefix) + calculateStallings(prefix)
+def getOutput(resultdir,prefix):
+	out = calculateBitrate(resultdir,prefix) + calculateBuffer(prefix) + calculateStallings(resultdir,prefix)
 	return out
 
-def calculateBitrate(prefix):
-    return "TEMPOUTPUT_bitrate "
+def calculateBitrate(resultdir,prefix):
+    bitrates=[]
+    json_in = open(resultdir + prefix + '_segments.json')
+    clientlog=json.load(json_in)
+    #playback_info = clientlog["playback_info"]
+    #down_shifts = playback_info["down_shifts"]
+    #up_shifts = playback_info["up_shifts"]
+    segment_info = clientlog["segment_info"]
+    for segment in segment_info:
+        if 'init' not in segment[0]:
+            bitrates.append(segment[1])
+            #print segment[0], segment[1]
+            #file_out_bitrates.write(str(segment[1]) + '\n')
+
+    bitrates_avg=numpy.mean(bitrates)
+    bitrates_max=max(bitrates)
+    bitrates_min=min(bitrates)
+    bitrates_q1=numpy.percentile(bitrates, 25)
+    bitrates_q2=numpy.percentile(bitrates, 50)
+    bitrates_q3=numpy.percentile(bitrates, 75)
+    bitrates_q4=numpy.percentile(bitrates, 90)
+
+    #return "TEMPOUTPUT_bitrate "
+    return '| Bitrates: ' + str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4) + "|"
 
 def calculateBuffer(prefix):
-    return "TEMPOUTPUT_buffer "
+    return "| TEMPOUTPUT_buffer |"
 
-def calculateStallings(prefix):
-    return "TEMPOUTPUT_stallings"
+def calculateStallings(resultdir,prefix):
+    json_in = open(resultdir + prefix + '_segments.json')
+    clientlog=json.load(json_in)
+    playback_info = clientlog["playback_info"]
+    interruptions = playback_info["interruptions"]
+    num_stalls = interruptions["count"]
+
+    down_shifts = playback_info["down_shifts"]
+    up_shifts = playback_info["up_shifts"]
+
+    #return "TEMPOUTPUT_stallings"
+    return '| Stallings: ' + str(num_stalls) + " | Up-shifts:" + str(up_shifts) + "| Down-Shifts:" + str(down_shifts) + "|"

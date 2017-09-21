@@ -276,7 +276,7 @@ def run_exp(meta_info, expconfig):
         #print ("Running traceroute against AStream server on interface: {}".format(cfg['modeminterfacename']))
         #run_traceroute(<target2>)
         #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
-        #outputs_astream=run_astream(<video id,server,port,playbacktype,segmentlimit,fileprefix>)
+        #outputs_astream=tream(<video id,server,port,playbacktype,segmentlimit,fileprefix>)
 
         #TODO: construct filename prefixes for YoMo and AStream
 
