@@ -22,7 +22,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, bitrates):
+def run_yomo(ytid, duration, prefix, bitrates,interf):
 
 	# Write output without buffering
 	sys.stdout.flush()
@@ -88,7 +88,7 @@ def run_yomo(ytid, duration, prefix, bitrates):
 
 	display.stop()
 	print time.time(), 'display stopped'
-	
+
 	## Kill Tshark
 	sys.exit(0)
 
@@ -109,7 +109,7 @@ def getEvents(prefix):
 	with open('/monroe/results/' + prefix + "_events.txt", "r") as filestream:
 		for line in filestream:
 			currentline = line.split("#")
-			if ("quality" in currentline[1]): 
+			if ("quality" in currentline[1]):
 				timestamps.append(float(currentline[0]))
 				quality = str(currentline[1])
 				quality = quality.split(":")[1]
@@ -132,7 +132,7 @@ def getBuffer(prefix):
 		for line in filestream:
 			currentline = line.split("#")
 			# end of video
-			if (isFirstLine is False and float(currentline[1]) == playtime[-1]): #TODO 
+			if (isFirstLine is False and float(currentline[1]) == playtime[-1]): #TODO
 				break;
 			timestamps.append(float(currentline[0]))
 			playtime.append(float(currentline[1]))
@@ -141,7 +141,7 @@ def getBuffer(prefix):
 			isFirstLine = False
 	return [timestamps , playtime, buffertime, avPlaytime]
 
-	
+
 def calculateBitrate(prefix, bitrates):
 	[timestamps, qualities, endtime] = getEvents(prefix)
 	timestamps.append(endtime)
@@ -149,15 +149,15 @@ def calculateBitrate(prefix, bitrates):
 	periods = np.diff(periods)
 	periods = np.round(periods)
 	periods = [int(i) for i in periods]
-		
-	usedBitrates = []	
+
+	usedBitrates = []
 	print qualities
-	
+
 	for x in range(0,len(qualities)):
 		index = [i for i, j in enumerate(bitrates) if qualities[x] in j]
 		currRate = float(bitrates[index[0]].split(":")[1])
 		usedBitrates.extend([currRate] * periods[x])
-		
+
 	avgBitrate = sum(usedBitrates)/len(usedBitrates)
 	maxBitrate = max(usedBitrates)
 	minBitrate = min(usedBitrates)
@@ -168,7 +168,7 @@ def calculateBitrate(prefix, bitrates):
 	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q25) + "," + str(q50) + "," + str(q75) + "," + str(q90)
 
 def calculateBuffer(prefix):
-	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(prefix)	
+	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(prefix)
 	avgBuffer = sum(buffertime)/len(buffertime)
 	maxBuffer = max(buffertime)
 	minBuffer = min(buffertime)
@@ -188,7 +188,7 @@ def calculateStallings(prefix):
 	for i in diffTimePlaytime:
 		if (i > 0.5):
 			stallings.append(i)
-		
+
 	numOfStallings = len(stallings)
 	avgStalling = sum(stallings)/len(stallings)
 	maxStalling = max(stallings)
