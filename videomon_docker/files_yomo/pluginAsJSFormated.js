@@ -1,13 +1,14 @@
 var init = function (){
 	
-	if (document.getElementsByTagName("video")[0]){
+	if (document.getElementsByTagName("video")[0]!=null){
 		player = document.getElementsByTagName("video")[0];
 		var divOutC = document.createElement("div");
 		divOutC.id = "outC";
-		document.getElementById("body").appendChild(divOutC);
+		body = document.getElementsByTagName("body")[0];
+		body.appendChild(divOutC);
 		var divOutE = document.createElement("div");
 		divOutE.id = "outE";
-		document.getElementById("body").appendChild(divOutE);
+		body.appendChild(divOutE);
 
 		last_infos = "";
 		last_videoHeight = -1;
