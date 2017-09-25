@@ -60,9 +60,19 @@ def run_yomo(ytid, duration, prefix, bitrates,interf):
 		jsFile.close
 
 		print time.time(), ' start video ', ytid
-		browser.get(url)
+		browser.get(url) 
+
+		# debug
+		browser.get_screenshot_as_file('/monroe/results/screenshot0.png')
 		browser.execute_script(js)
-		time.sleep(duration)
+		browser.get_screenshot_as_file('/monroe/results/screenshot1.png')
+		browser.get_screenshot_as_file('/monroe/results/screenshot2.png')
+		time.sleep(duration/2)
+		browser.get_screenshot_as_file('/monroe/results/screenshot3.png')
+		time.sleep(duration/2)
+		
+		#browser.execute_script(js)
+		#time.sleep(duration)
 		print "video playback ended"
 
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
@@ -85,6 +95,9 @@ def run_yomo(ytid, duration, prefix, bitrates,interf):
 		ts = time.time()
 		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
 		print st
+		display.stop()
+		sys.exit(0)
+		return ""
 
 	display.stop()
 	print time.time(), 'display stopped'

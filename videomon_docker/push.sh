@@ -2,7 +2,7 @@
 #
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-CONTAINER=${DIR##*/}
+CONTAINER=videomon/yomo-astreamdocker
 
 CONTAINERTAG=videomon/yomo-astream
 
