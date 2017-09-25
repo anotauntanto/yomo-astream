@@ -258,7 +258,7 @@ def run_exp(meta_info, expconfig):
             "cnf_video_id": cfg['cnf_video_id'],
             "TEMPOUTPUT_AStream": "NA",
             "TEMPOUTPUT_YoMo": "NA",
-            "NodeId": cfg['nodeid',
+            "NodeId": cfg['nodeid'],
             "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]]
         })
         print('DBG: testpoint2')
