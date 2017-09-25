@@ -28,7 +28,7 @@ LOG_LEVEL = None
 
 # Set '-' to print to screen
 # LOG_FOLDER = "ASTREAM_LOGS/"
-LOG_FOLDER = "/monroe/results/"
+LOG_FOLDER = "/monroe/results/videomon"
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 

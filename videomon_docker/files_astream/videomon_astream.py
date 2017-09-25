@@ -359,6 +359,8 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     os.rename(resultdir + '_segments.json', resultdir + prefix + '_segments.json')
     os.rename(resultdir + '_runtime.log', resultdir + prefix + '_runtime.log')
 
+
+
     #TODO: prepare output 7xbitrate, 7xbuffer, 1xnumstall, 7xduration
     out = getOutput(resultdir,prefix)
     #print("DBG: getOutput method")

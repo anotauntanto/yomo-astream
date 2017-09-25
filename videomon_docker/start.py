@@ -24,7 +24,7 @@ from random import shuffle
 import shutil
 from subprocess import Popen, PIPE, STDOUT, call, check_output, CalledProcessError
 import sys
-import tarfile
+#import tarfile
 from tempfile import NamedTemporaryFile
 import time
 import traceback
@@ -87,7 +87,7 @@ EXPCONFIG = {
   "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the youyube video playback
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
-  "cnf_additional_results": True                   # Whether or not to tar additional log files
+  "cnf_compress_additional_results": True                   # Whether or not to tar additional log files
   #"cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
   #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
@@ -110,16 +110,20 @@ EXPCONFIG = {
   }
 
 # Helper functions
-def get_filename(data, postfix, ending, tstamp):
-    return "{}_{}_{}{}.{}".format(data['dataid'], data['cnf_video_id'], tstamp,
+def get_filename(data, postfix, ending, tstamp, interface):
+    return "{}_{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
         ("_" + postfix) if postfix else "", ending)
 
-def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outdir="/monroe/results/"):
+def get_prefix(data, postfix, tstamp, interface):
+    return "{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
+        ("_" + postfix) if postfix else "")
+
+def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outdir="/monroe/results/", interface="interface"):
     f = NamedTemporaryFile(mode='w+', delete=False, dir=outdir)
     f.write(msg)
     f.close()
     #mfilename=get_filename(data, postfix, ending, tstamp)
-    outfile = os.path.join(outdir, get_filename(data, postfix, ending, tstamp))
+    outfile = os.path.join(outdir, get_filename(data, postfix, ending, tstamp, interface))
     #print(outfile)
     move_file(f.name, outfile)
 
@@ -168,7 +172,7 @@ def metadata(meta_ifinfo, ifname, expconfig):
                     tstamp = msg['Timestamp']
                 if expconfig['verbosity'] > 2:
                     print(msg)
-                save_output(data=msg, msg=json.dumps(msg), postfix='summary', tstamp=tstamp, outdir=expconfig['save_metadata_resultdir'])
+                save_output(data=msg, msg=json.dumps(msg), postfix='summary', tstamp=tstamp, outdir=expconfig['save_metadata_resultdir'], interface=ifname)
 
             if topic.startswith(expconfig['modem_metadata_topic']):
                 if (expconfig["modeminterfacename"] in msg and
@@ -259,12 +263,7 @@ def run_exp(meta_info, expconfig):
             "TEMPOUTPUT_AStream": "NA",
             "TEMPOUTPUT_YoMo": "NA",
             "NodeId": cfg['nodeid'],
-<<<<<<< HEAD
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]]
-=======
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
->>>>>>> c4da1bf521d1f5dcf892d2adca94b507ab15b3e1
-        })
+            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]})
         print('DBG: testpoint2')
 
         # Add metadata if requested
@@ -286,15 +285,6 @@ def run_exp(meta_info, expconfig):
 
         #TODO: construct filename prefixes for YoMo and AStream
 
-        prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
-        prefix_yomo=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_yomo_'
-        prefix_astream=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_astream_'
-
-        print('Prefix for YoMo: '+prefix_yomo)
-        print('Prefix for AStream: '+prefix_astream)
-
-        #TODO: run tools and write results into summary JSON
-
         #towrite_data=dict()
         #towrite_data['TEMPOUTPUT'] = 'temporary output'
         towrite_data = cfg['cnf_add_to_result']
@@ -302,18 +292,34 @@ def run_exp(meta_info, expconfig):
 
         ifname=meta_info[expconfig["modeminterfacename"]]
 
-        print('Pseudo-running AStream')
+        prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
+        prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
+        prefix_astream=get_prefix(data=cfg, postfix="astream", tstamp=prefix_timestamp, interface=ifname)
+
+        resultdir_videomon=cfg['resultdir']+"videomon/"
+        if not os.path.exists(resultdir_videomon):
+            os.makedirs(resultdir_videomon)
+        #prefix_yomo=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_yomo_'
+        #prefix_astream=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_astream_'
+
+        print('Prefix for YoMo: '+prefix_yomo)
+        print('Prefix for AStream: '+prefix_astream)
+        print('Temporary result directory: '+resultdir_videomon)
+
+        #TODO: run tools and write results into summary JSON
+
+        print('Pseudo-running YoMo/AStream')
         #bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
         bitrates="144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167"
 
         try:
 
             #PART I - YoMo
-            out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname)
-            print(out_yomo)
+            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname)
+            #print(out_yomo)
 
             #TODO: parse output before writing to summary JSON
-            towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
+            #towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
 
             #PART II - AStream
             server_host="128.39.37.161"
@@ -322,9 +328,9 @@ def run_exp(meta_info, expconfig):
 
             #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
             #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            #out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,resultdir_videomon)
             #print(out_astream)
-            #towrite_data['TEMPOUTPUT_AStream']=out_astream
+            towrite_data['TEMPOUTPUT_AStream']=out_astream
 
         except Exception as e:
             if cfg['verbosity'] > 0:
@@ -334,13 +340,29 @@ def run_exp(meta_info, expconfig):
         #print(towrite_data)
         #towrite_file='/monroe/results/temp_log.json'
         #write_json(towrite_data,towrite_file)
-        save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'])
+
+        #TODO: compress outputs other than summary JSON
+        if 'cnf_compress_additional_results' in cfg and cfg['cnf_compress_additional_results']:
+            #with tarfile.open(os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), mode='w:gz') as tar:
+            files_to_compress=resultdir_videomon+cfg['dataid']+"*"
+            #    #tar.add(cfg['resultdir'], recursive=False)
+            #    tar.add(files_to_compress)
+
+            shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), format='tar', root_dir=resultdir_videomon,base_dir="./")
+            shutil.rmtree(resultdir_videomon)
+            #os.remove(cfg['resultdir'])
+
+        save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
 
     except Exception as e:
         if cfg['verbosity'] > 0:
             print ("Execution or parsing failed for "
                    #"config : {}, "
                    "error: {}").format(e)#cfg, e)
+
+
+
+
 
 def create_exp_process(meta_info, expconfig):
     process = Process(target=run_exp, args=(meta_info, expconfig, ))
