@@ -24,11 +24,12 @@ import os
 # The configuration file for the AStream module
 # create logger
 LOG_NAME = 'AStream_log'
-LOG_LEVEL = None
+#LOG_LEVEL = None
 
 # Set '-' to print to screen
 # LOG_FOLDER = "ASTREAM_LOGS/"
-LOG_FOLDER = "/monroe/results/videomon"
+LOG_FOLDER = "/monroe/results/videomon/"
+#LOG_FOLDER = "/monroe/results/"
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
 
