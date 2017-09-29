@@ -22,35 +22,34 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, bitrates,interf):
+def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4):
 
-	# Write output without buffering
-	sys.stdout.flush()
-	sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
-	## Start tShark
-	callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
-	call(callTshark, shell=True)
-
-	# Start display
-	display = Display(visible=0, size=(1920, 1080)) #display size has to be cutomized 1920, 1080
-	print time.time(), ' start display'
-	display.start()
-	time.sleep(10)
-
-	bufferFactor = 2
-	url = 'https://www.youtube.com/watch?v=' + ytid
-
-	caps = DesiredCapabilities().FIREFOX
-	caps["marionette"] = True
-	caps["pageLoadStrategy"] = "normal"  #  complete
-	#caps["pageLoadStrategy"] = "eager"  #  interactive
-	#caps["pageLoadStrategy"] = "none"
-	#caps['loggingPrefs'] = { 'browser':'ALL' }
-
-	# Start video
 	try:
+		# Write output without buffering
+		sys.stdout.flush()
+		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
+		## Start tShark
+		callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark_.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
+		call(callTshark, shell=True)
+
+		# Start display
+		display = Display(visible=0, size=(1920, 1080)) #display size has to be cutomized 1920, 1080
+		print time.time(), ' start display'
+		display.start()
+		time.sleep(10)
+
+		bufferFactor = 2
+		url = 'https://www.youtube.com/watch?v=' + ytid
+
+		caps = DesiredCapabilities().FIREFOX
+		caps["marionette"] = True
+		#caps["pageLoadStrategy"] = "normal"  #  complete
+		#caps["pageLoadStrategy"] = "eager"  #  interactive
+		caps["pageLoadStrategy"] = "none"
+		#caps['loggingPrefs'] = { 'browser':'ALL' }
+
+		# Start video
 		print time.time(), ' start firefox'
 		browser = webdriver.Firefox(capabilities=caps)
 		time.sleep(10)
@@ -63,31 +62,41 @@ def run_yomo(ytid, duration, prefix, bitrates,interf):
 		browser.get(url) 
 
 		# debug
-		browser.get_screenshot_as_file('/monroe/results/screenshot0.png')
-		browser.execute_script(js)
-		browser.get_screenshot_as_file('/monroe/results/screenshot1.png')
-		browser.get_screenshot_as_file('/monroe/results/screenshot2.png')
-		time.sleep(duration/2)
-		browser.get_screenshot_as_file('/monroe/results/screenshot3.png')
-		time.sleep(duration/2)
-		
+		browser.get_screenshot_as_file(resultDir + 'screenshot0.png')
 		#browser.execute_script(js)
-		#time.sleep(duration)
+		#browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
+		#browser.get_screenshot_as_file(resultDir + 'screenshot2.png')
+		#time.sleep(duration/2)
+		#browser.get_screenshot_as_file(resultDir + 'screenshot3.png')
+		#time.sleep(duration/2)
+		
+		browser.execute_script(js)
+		time.sleep(duration)
+		browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
 		print "video playback ended"
 
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
 
-		with open('/monroe/results/' + prefix + '_buffer.txt', 'w') as f:
+		with open(resultDir + prefix + '_buffer.txt', 'w') as f:
 			f.write(out)
 
-		with open('/monroe/results/' + prefix + '_events.txt', 'w') as f:
+		with open(resultDir + prefix + '_events.txt', 'w') as f:
 			f.write(outE.encode("UTF-8"))
 
 
 		browser.close()
 		print time.time(), ' finished firefox'
 
+		display.stop()
+		print time.time(), 'display stopped'
+
+		## Kill Tshark
+		sys.exit(0)
+
+		# Calculate output
+		out = getOutput(bitrates)
+		return out
 
 	except Exception as e:
 		print time.time(), ' exception thrown'
@@ -96,19 +105,10 @@ def run_yomo(ytid, duration, prefix, bitrates,interf):
 		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
 		print st
 		display.stop()
+		## Kill Tshark
 		sys.exit(0)
-		return ""
 
-	display.stop()
-	print time.time(), 'display stopped'
-
-	## Kill Tshark
-	sys.exit(0)
-
-	# Calculate output
-	out = getOutput(bitrates)
-
-	return out;
+	return ""
 
 
 # Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
@@ -119,7 +119,7 @@ def getOutput(prefix, bitrates):
 def getEvents(prefix):
 	timestamps = []
 	qualities = []
-	with open('/monroe/results/' + prefix + "_events.txt", "r") as filestream:
+	with open(resultDir + prefix + "_events.txt", "r") as filestream:
 		for line in filestream:
 			currentline = line.split("#")
 			if ("quality" in currentline[1]):
@@ -141,7 +141,7 @@ def getBuffer(prefix):
 	buffertime = []
 	avPlaytime = []
 	isFirstLine = True
-	with open('/monroe/results/' + prefix + "_buffer.txt", "r") as filestream:
+	with open(resultDir + prefix + "_buffer.txt", "r") as filestream:
 		for line in filestream:
 			currentline = line.split("#")
 			# end of video
@@ -174,22 +174,22 @@ def calculateBitrate(prefix, bitrates):
 	avgBitrate = sum(usedBitrates)/len(usedBitrates)
 	maxBitrate = max(usedBitrates)
 	minBitrate = min(usedBitrates)
-	q25 = np.percentile(usedBitrates, 25)
-	q50 = np.percentile(usedBitrates, 50)
-	q75 = np.percentile(usedBitrates, 75)
-	q90 = np.percentile(usedBitrates, 90)
-	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q25) + "," + str(q50) + "," + str(q75) + "," + str(q90)
+	q1 = np.percentile(usedBitrates, quant1)
+	q2 = np.percentile(usedBitrates, quant2)
+	q3 = np.percentile(usedBitrates, quant3)
+	q4 = np.percentile(usedBitrates, quant4)
+	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
 
 def calculateBuffer(prefix):
 	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(prefix)
 	avgBuffer = sum(buffertime)/len(buffertime)
 	maxBuffer = max(buffertime)
 	minBuffer = min(buffertime)
-	q25 = np.percentile(buffertime, 25)
-	q50 = np.percentile(buffertime, 50)
-	q75 = np.percentile(buffertime, 75)
-	q90 = np.percentile(buffertime, 90)
-	return str(avgBuffer) + "," + str(maxBuffer) + "," + str(minBuffer) + "," + str(q25) + "," + str(q50) + "," + str(q75) + "," + str(q90)
+	q1 = np.percentile(buffertime, quant1)
+	q2 = np.percentile(buffertime, quant2)
+	q3 = np.percentile(buffertime, quant3)
+	q4 = np.percentile(buffertime, quant4)
+	return str(avgBuffer) + "," + str(maxBuffer) + "," + str(minBuffer) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
 
 def calculateStallings(prefix):
 	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(prefix)
@@ -206,8 +206,8 @@ def calculateStallings(prefix):
 	avgStalling = sum(stallings)/len(stallings)
 	maxStalling = max(stallings)
 	minStalling = min(stallings)
-	q25 = np.percentile(stallings, 25)
-	q50 = np.percentile(stallings, 50)
-	q75 = np.percentile(stallings, 75)
-	q90 = np.percentile(stallings, 90)
-	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q25) + "," + str(q50) + "," + str(q75) + "," + str(q90)
+	q1 = np.percentile(stallings, quant1)
+	q2 = np.percentile(stallings, quant2)
+	q3 = np.percentile(stallings, quant3)
+	q4 = np.percentile(stallings, quant4)
+	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
