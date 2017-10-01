@@ -24,4 +24,8 @@ COPY start.py /opt/monroe/
 COPY files_yomo /opt/monroe/
 COPY files_astream /opt/monroe/
 
+COPY files_yomo/autoconfig.js /opt/firefox/defaults/pref
+COPY files_yomo/mozilla.cfg  /opt/firefox
+COPY files_yomo/{d10d0bf8-f5b5-c8b4-a8b2-2b9879e08c5d}.xpi /opt/firefox/browser/extensions
+
 ENTRYPOINT ["dumb-init", "--", "/usr/bin/python", "/opt/monroe/start.py"]
