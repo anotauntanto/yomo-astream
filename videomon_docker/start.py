@@ -87,7 +87,11 @@ EXPCONFIG = {
   "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the youyube video playback
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
-  "cnf_compress_additional_results": True                   # Whether or not to tar additional log files
+  "cnf_compress_additional_results": True,         # Whether or not to tar additional log files
+  "cnf_q1": 25,
+  "cnf_q2": 50,
+  "cnf_q3": 75,
+  "cnf_q4": 90
   #"cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
   #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
@@ -315,7 +319,7 @@ def run_exp(meta_info, expconfig):
         try:
 
             #PART I - YoMo
-            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname)
+            #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
             #print(out_yomo)
 
             #TODO: parse output before writing to summary JSON
@@ -328,7 +332,7 @@ def run_exp(meta_info, expconfig):
 
             #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
             #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,resultdir_videomon)
+            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
             #print(out_astream)
             towrite_data['TEMPOUTPUT_AStream']=out_astream
 
@@ -348,7 +352,7 @@ def run_exp(meta_info, expconfig):
             #    #tar.add(cfg['resultdir'], recursive=False)
             #    tar.add(files_to_compress)
 
-            shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), format='tar', root_dir=resultdir_videomon,base_dir="./")
+            shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)), format='gztar', root_dir=resultdir_videomon,base_dir="./")
             shutil.rmtree(resultdir_videomon)
             #os.remove(cfg['resultdir'])
 

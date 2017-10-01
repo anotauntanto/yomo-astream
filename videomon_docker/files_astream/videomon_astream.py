@@ -247,13 +247,15 @@ def print_representations(dp_object):
     for bandwidth in dp_object.video:
         print bandwidth
 
-def run_astream(video_id,server_host,server_port,algorithm,segment_limit,download,ifname,prefix,resultdir):
+def run_astream(video_id,server_host,server_port,algorithm,segment_limit,download,prefix,ifname,resultdir,q1,q2,q3,q4):
 
     print("DBG: testpoint run_astream")
 
     #TODO: start tshark
     #callTshark = "tshark -n -i " + ifname + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
-    #call(callTshark, shell=True)
+
+    callTshark = "tshark -n -i " + ifname + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultdir + prefix + "_tshark_.txt  2>" + resultdir + prefix + "_tshark_error.txt &"
+    call(callTshark, shell=True)
 
     #subprocess.call("./run_tshark.sh")
 
@@ -363,22 +365,22 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
 
 
     #TODO: prepare output 7xbitrate, 7xbuffer, 1xnumstall, 7xduration
-    out = getOutput(resultdir,prefix)
+    out = getOutput(resultdir,prefix,q1,q2,q3,q4)
     #print("DBG: getOutput method")
     #print(out)
 
     #TODO: kill Tshark
-    #sys.exit(0)
+    sys.exit(0)
 
     return out
     #return "Fake output from AStream"
 
 # Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
-def getOutput(resultdir,prefix):
-	out = calculateBitrate(resultdir,prefix) + calculateBuffer(prefix) + calculateStallings(resultdir,prefix)
+def getOutput(resultdir,prefix,q1,q2,q3,q4):
+	out = calculateBitrate(resultdir,prefix,q1,q2,q3,q4) + calculateBuffer(prefix) + calculateStallings(resultdir,prefix)
 	return out
 
-def calculateBitrate(resultdir,prefix):
+def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
     bitrates=[]
     json_in = open(resultdir + prefix + '_segments.json')
     clientlog=json.load(json_in)
@@ -395,10 +397,10 @@ def calculateBitrate(resultdir,prefix):
     bitrates_avg=numpy.mean(bitrates)
     bitrates_max=max(bitrates)
     bitrates_min=min(bitrates)
-    bitrates_q1=numpy.percentile(bitrates, 25)
-    bitrates_q2=numpy.percentile(bitrates, 50)
-    bitrates_q3=numpy.percentile(bitrates, 75)
-    bitrates_q4=numpy.percentile(bitrates, 90)
+    bitrates_q1=numpy.percentile(bitrates, q1)
+    bitrates_q2=numpy.percentile(bitrates, q2)
+    bitrates_q3=numpy.percentile(bitrates, q3)
+    bitrates_q4=numpy.percentile(bitrates, q4)
 
     #return "TEMPOUTPUT_bitrate "
     return '| Bitrates: ' + str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4) + "|"

@@ -77,6 +77,11 @@ JSON_HANDLE['MONROE'] = list() # list of dictionaries
 #             "SequenceNumber": 0,
 #             "GPSPositions": None
 #         }
+
+
+
+
+
 # Constants for the BASIC-2 adaptation scheme
 BASIC_THRESHOLD = 10
 BASIC_UPPER_THRESHOLD = 1.2
