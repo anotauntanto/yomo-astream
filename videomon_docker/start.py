@@ -356,6 +356,9 @@ def run_exp(meta_info, expconfig):
             if len(out_yomo_fields) == len(summary_yomo_fields):
                 for i in xrange(0,len(out_yomo_fields)-1):
                     towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
+            else:
+                for i in xrange(0,len(out_yomo_fields)-1):
+                    towrite_data[summary_yomo_fields[i]]="NA"
 
 
             #PART II - AStream
@@ -375,6 +378,9 @@ def run_exp(meta_info, expconfig):
             #if len(out_astream_fields) == len(summary_astream_fields):
             #    for i in xrange(0,len(out_astream_fields)-1):
             #        towrite_data[summary_astream_fields[i]]=out_astream_fields[i]
+            #else:
+            #    for i in xrange(0,len(out_astream_fields)-1):
+            #        towrite_data[summary_astream_fields[i]]="NA"
 
 
         # towrite_data[]"res_astream_bitrate_mean",
