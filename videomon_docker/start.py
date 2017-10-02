@@ -22,6 +22,7 @@ import netifaces
 import os
 from random import shuffle
 import shutil
+#import string
 from subprocess import Popen, PIPE, STDOUT, call, check_output, CalledProcessError
 import sys
 #import tarfile
@@ -91,7 +92,28 @@ EXPCONFIG = {
   "cnf_q1": 25,
   "cnf_q2": 50,
   "cnf_q3": 75,
-  "cnf_q4": 90
+  "cnf_q4": 90,
+
+  "cnf_astream_out_fields": "res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
+res_astream_bitrate_q1,res_astream_bitrate_q2,res_astream_bitrate_q3,res_astream_bitrate_q4,\
+res_astream_buffer_mean,res_astream_buffer_max,res_astream_buffer_min,\
+res_astream_buffer_q1,res_astream_buffer_q2,res_astream_buffer_q3,res_astream_buffer_q4,\
+res_astream_numstalls,\
+res_astream_durstalls_mean,res_astream_durstalls_max,res_astream_durstalls_min,\
+res_astream_durstalls_q1,res_astream_durstalls_q2,res_astream_durstalls_q3,res_astream_durstalls_q4,\
+res_astream_durstalls_total,\
+res_astream_numswitches_up,\
+res_astream_numswitches_down",
+
+  "cnf_yomo_out_fields": "res_yomo_bitrate_mean,res_yomo_bitrate_max,res_yomo_bitrate_min,\
+  res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
+  res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
+  res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
+  res_yomo_numstalls,\
+  res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
+  res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4"
+
+
   #"cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
   #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
@@ -267,7 +289,10 @@ def run_exp(meta_info, expconfig):
             "TEMPOUTPUT_AStream": "NA",
             "TEMPOUTPUT_YoMo": "NA",
             "NodeId": cfg['nodeid'],
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]})
+            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]#,
+            #,
+            #generate_empty_fields(cfg['cnf_yomo_out_fields'])
+            })
         print('DBG: testpoint2')
 
         # Add metadata if requested
@@ -333,8 +358,39 @@ def run_exp(meta_info, expconfig):
             #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
             #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
             out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-            #print(out_astream)
+            print(out_astream)
             towrite_data['TEMPOUTPUT_AStream']=out_astream
+
+            out_astream_fields = out_astream.split(",")
+            summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
+
+            if len(out_astream_fields) == len(summary_astream_fields):
+                for i in xrange(0,len(out_astream_fields)-1):
+                    towrite_data[summary_astream_fields[i]]=out_astream_fields[i]
+
+
+        # towrite_data[]"res_astream_bitrate_mean",
+        #   "res_astream_bitrate_max":,
+        #   "res_astream_bitrate_min":,
+        #   "res_astream_bitrate_q1":,
+        #   "res_astream_bitrate_q2":,
+        #   "res_astream_bitrate_q3":,
+        #   "res_astream_bitrate_q4":,
+        #   "res_astream_buffer_mean",
+        #   "res_astream_buffer_max":,
+        #   "res_astream_buffer_min":,
+        #   "res_astream_buffer_q1":,
+        #   "res_astream_buffer_q2":,
+        #   "res_astream_buffer_q3":,
+        #   "res_astream_buffer_q4":,
+        #   "res_astream_numstalls":,
+        #   "res_astream_durstalls_mean",
+        #   "res_astream_durstalls_max":,
+        #   "res_astream_durstalls_min":,
+        #   "res_astream_durstalls_q1":,
+        #   "res_astream_durstalls_q2":,
+        #   "res_astream_durstalls_q3":,
+        #   "res_astream_durstalls_q4":,
 
         except Exception as e:
             if cfg['verbosity'] > 0:

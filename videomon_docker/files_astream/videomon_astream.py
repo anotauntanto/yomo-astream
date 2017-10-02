@@ -254,7 +254,7 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     #TODO: start tshark
     #callTshark = "tshark -n -i " + ifname + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
 
-    callTshark = "tshark -n -i " + ifname + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultdir + prefix + "_tshark_.txt  2>" + resultdir + prefix + "_tshark_error.txt &"
+    callTshark = "tshark -n -i " + ifname + " -E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultdir + prefix + "_tshark_.txt  2>" + resultdir + prefix + "_tshark_error.txt &"
     call(callTshark, shell=True)
 
     #subprocess.call("./run_tshark.sh")
@@ -370,14 +370,14 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     #print(out)
 
     #TODO: kill Tshark
-    sys.exit(0)
+    #sys.exit(0)
 
     return out
     #return "Fake output from AStream"
 
 # Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
 def getOutput(resultdir,prefix,q1,q2,q3,q4):
-	out = calculateBitrate(resultdir,prefix,q1,q2,q3,q4) + calculateBuffer(prefix) + calculateStallings(resultdir,prefix)
+	out = calculateBitrate(resultdir,prefix,q1,q2,q3,q4) + "," + calculateBuffer(resultdir,prefix,q1,q2,q3,q4) + "," + calculateStallings(resultdir,prefix,q1,q2,q3,q4)
 	return out
 
 def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
@@ -403,23 +403,24 @@ def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
     bitrates_q4=numpy.percentile(bitrates, q4)
 
     #return "TEMPOUTPUT_bitrate "
-    return '| Bitrates: ' + str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4) + "|"
+    return str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
 
-def calculateBuffer(prefix):
-    return "| TEMPOUTPUT_buffer |"
+def calculateBuffer(resultdir,prefix,q1,q2,q3,q4):
+    return "NA,NA,NA,NA,NA,NA,NA"
 
-def calculateStallings(resultdir,prefix):
-    json_in = open(resultdir + prefix + '_segments.json')
+def calculateStallings(resultdir,prefix,q1,q2,q3,q4):
+    json_in = open(resultdir + prefix + "_segments.json")
     clientlog=json.load(json_in)
-    playback_info = clientlog["playback_info"]
-    interruptions = playback_info["interruptions"]
-    num_stalls = interruptions["count"]
+    playback_info = clientlog['playback_info']
+    interruptions = playback_info['interruptions']
+    num_stalls = interruptions['count']
+    stalls_total_duration = interruptions['total_duration']
 
-    down_shifts = playback_info["down_shifts"]
-    up_shifts = playback_info["up_shifts"]
+    down_shifts = playback_info['down_shifts']
+    up_shifts = playback_info['up_shifts']
 
     #return "TEMPOUTPUT_stallings"
-    return '| Stallings: ' + str(num_stalls) + " | Up-shifts:" + str(up_shifts) + "| Down-Shifts:" + str(down_shifts) + "|"
+    return str(num_stalls) + ",NA,NA,NA,NA,NA,NA,NA," + str(stalls_total_duration) + "," + str(up_shifts) + "," + str(down_shifts)
 
 def configure_log_file(resultdir, playback_type="", log_file=config_dash.LOG_FILENAME):
     """ Module to configure the log file and the log parameters.
