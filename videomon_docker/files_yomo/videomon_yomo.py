@@ -30,7 +30,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 		## Start tShark
-		callTshark = "tshark -n -i " + interf + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark_.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
+		callTshark = "tshark -n -i " + interf + " -E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark_.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
 		call(callTshark, shell=True)
 
 		# Start display
@@ -92,10 +92,10 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		print time.time(), 'display stopped'
 
 		## Kill Tshark
-		sys.exit(0)
+		#sys.exit(0)
 
 		# Calculate output
-		out = getOutput(bitrates)
+		out = getOutput(resultDir,prefix,bitrates)
 		return out
 
 	except Exception as e:
@@ -106,17 +106,18 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		print st
 		display.stop()
 		## Kill Tshark
-		sys.exit(0)
+		#sys.exit(0)
+		return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
 
-	return ""
+	return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
 
 
 # Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
-def getOutput(prefix, bitrates):
-	out = calculateBitrate(prefix, bitrates) + calculateBuffer(prefix) + calculateStallings(prefix)
+def getOutput(resultDir,prefix, bitrates):
+	out = calculateBitrate(resultDir,prefix, bitrates) + calculateBuffer(resultDir,prefix) + calculateStallings(resultDir,prefix)
 	return out
 
-def getEvents(prefix):
+def getEvents(resultDir,prefix):
 	timestamps = []
 	qualities = []
 	with open(resultDir + prefix + "_events.txt", "r") as filestream:
@@ -127,15 +128,14 @@ def getEvents(prefix):
 				quality = str(currentline[1])
 				quality = quality.split(":")[1]
 				quality = quality.split(" ")[0]
-				qualities.append(quality)
 			if ("ended" in currentline[1]):
 				endtime = float(currentline[0])
 	if 'endtime' not in locals():
-		[times, playtime, buffertime, avPlaytime] = getBuffer(prefix)
+		[times, playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
 		endtime = times[-1]
 	return [timestamps, qualities, endtime]
 
-def getBuffer(prefix):
+def getBuffer(resultDir,prefix):
 	timestamps = []
 	playtime = []
 	buffertime = []
@@ -155,8 +155,8 @@ def getBuffer(prefix):
 	return [timestamps , playtime, buffertime, avPlaytime]
 
 
-def calculateBitrate(prefix, bitrates):
-	[timestamps, qualities, endtime] = getEvents(prefix)
+def calculateBitrate(resultDir,prefix, bitrates):
+	[timestamps, qualities, endtime] = getEvents(resultDir,prefix)
 	timestamps.append(endtime)
 	periods = [x / 1000 for x in timestamps]
 	periods = np.diff(periods)
@@ -180,8 +180,8 @@ def calculateBitrate(prefix, bitrates):
 	q4 = np.percentile(usedBitrates, quant4)
 	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
 
-def calculateBuffer(prefix):
-	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(prefix)
+def calculateBuffer(resultDir,prefix):
+	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
 	avgBuffer = sum(buffertime)/len(buffertime)
 	maxBuffer = max(buffertime)
 	minBuffer = min(buffertime)
@@ -191,8 +191,8 @@ def calculateBuffer(prefix):
 	q4 = np.percentile(buffertime, quant4)
 	return str(avgBuffer) + "," + str(maxBuffer) + "," + str(minBuffer) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
 
-def calculateStallings(prefix):
-	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(prefix)
+def calculateStallings(resultDir,prefix):
+	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
 	diffTimestamps = np.diff(timestamps)/1000
 	diffPlaytime = np.diff(playtime)
 
