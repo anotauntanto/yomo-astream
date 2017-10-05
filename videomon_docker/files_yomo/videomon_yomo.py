@@ -117,7 +117,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 	return ""
 
 
-# Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
+# Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls, total stall duration, quality switches (up/down)
 def getOutput(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 	out = calculateBitrate(resultDir,prefix, bitrates.split(","),quant1,quant2,quant3,quant4) + "," + calculateBuffer(resultDir,prefix,quant1,quant2,quant3,quant4) + "," + calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4)
 	return out
@@ -171,9 +171,8 @@ def calculateBitrate(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 	periods = [int(i) for i in periods]
 
 	usedBitrates = []
-	#print "len(qualities): ", len(qualities)
-	#print "bitrates: ", bitrates
-
+	qualUpSwitch = 0;
+	qualDownSwitch = 0;
 
 	for x in range(0,len(qualities)):
 		index = [i for i, j in enumerate(bitrates) if qualities[x] in j]
@@ -181,8 +180,15 @@ def calculateBitrate(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 		currRate = float(bitrates[index[0]].split(":")[1])
 		#print "currRate: ", currRate
 		usedBitrates.extend([currRate] * periods[x])
-
+		if(int(qualities[x].split('p')[0]) > int(qualities[x-1].split('p')[0])): 
+			qualUpSwitch += 1
+		elif(int(qualities[x].split('p')[0]) < int(qualities[x-1].split('p')[0])): 
+			qualDownSwitch += 1
+			
 	#print "len(usedBitrates): ", len(usedBitrates)
+	print "qualities", qualities
+	print "qualUpSwitch: ", qualUpSwitch
+	print "qualDownSwitch: ", qualDownSwitch
 	avgBitrate = sum(usedBitrates)/len(usedBitrates)
 	maxBitrate = max(usedBitrates)
 	minBitrate = min(usedBitrates)
@@ -190,7 +196,7 @@ def calculateBitrate(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 	q2 = np.percentile(usedBitrates, quant2)
 	q3 = np.percentile(usedBitrates, quant3)
 	q4 = np.percentile(usedBitrates, quant4)
-	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
+	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4) + "," + str(qualUpSwitch) + "," + str(qualDownSwitch)
 
 def calculateBuffer(resultDir,prefix,quant1,quant2,quant3,quant4):
 	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
@@ -224,4 +230,6 @@ def calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4):
 	q2 = np.percentile(stallings, quant2)
 	q3 = np.percentile(stallings, quant3)
 	q4 = np.percentile(stallings, quant4)
-	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
+	totalStalling = sum(stallings)
+	print "totalStalling: ", totalStalling
+	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4) + "," + str(totalStalling)
