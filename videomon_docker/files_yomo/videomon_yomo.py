@@ -84,19 +84,11 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		with open(resultDir + prefix + '_events.txt', 'w') as f:
 			f.write(outE.encode("UTF-8"))
 
-
 		browser.close()
 		print time.time(), ' finished firefox'
 
 		display.stop()
 		print time.time(), 'display stopped'
-
-		## Kill Tshark
-		#sys.exit(0)
-
-		# Calculate output
-		out = getOutput(resultDir,prefix,bitrates)
-		return out
 
 	except Exception as e:
 		print time.time(), ' exception thrown'
@@ -105,16 +97,29 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
 		print st
 		display.stop()
+
+	try:
+		# Calculate output
+		out = getOutput(resultDir,prefix,bitrates,quant1,quant2,quant3,quant4)
+		#print out
+		return out
+
+	except Exception as e:
+		print time.time(), ' exception thrown'
+		print e
+		ts = time.time()
+		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
+		print st
 		## Kill Tshark
 		#sys.exit(0)
 		return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
 
-	return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
+	return ""
 
 
-# Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
-def getOutput(resultDir,prefix, bitrates):
-	out = calculateBitrate(resultDir,prefix, bitrates) + calculateBuffer(resultDir,prefix) + calculateStallings(resultDir,prefix)
+# Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls, total stall duration, quality switches (up/down)
+def getOutput(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
+	out = calculateBitrate(resultDir,prefix, bitrates.split(","),quant1,quant2,quant3,quant4) + "," + calculateBuffer(resultDir,prefix,quant1,quant2,quant3,quant4) + "," + calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4)
 	return out
 
 def getEvents(resultDir,prefix):
@@ -123,16 +128,18 @@ def getEvents(resultDir,prefix):
 	with open(resultDir + prefix + "_events.txt", "r") as filestream:
 		for line in filestream:
 			currentline = line.split("#")
-			if ("quality" in currentline[1]):
+			if ("quality" in currentline[1]): 
 				timestamps.append(float(currentline[0]))
 				quality = str(currentline[1])
 				quality = quality.split(":")[1]
 				quality = quality.split(" ")[0]
+				qualities.append(quality)
 			if ("ended" in currentline[1]):
 				endtime = float(currentline[0])
 	if 'endtime' not in locals():
 		[times, playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
 		endtime = times[-1]
+	#print "timestamps: ", timestamps, ", qualities: ", qualities, "endtime: ", endtime
 	return [timestamps, qualities, endtime]
 
 def getBuffer(resultDir,prefix):
@@ -155,7 +162,7 @@ def getBuffer(resultDir,prefix):
 	return [timestamps , playtime, buffertime, avPlaytime]
 
 
-def calculateBitrate(resultDir,prefix, bitrates):
+def calculateBitrate(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 	[timestamps, qualities, endtime] = getEvents(resultDir,prefix)
 	timestamps.append(endtime)
 	periods = [x / 1000 for x in timestamps]
@@ -164,13 +171,24 @@ def calculateBitrate(resultDir,prefix, bitrates):
 	periods = [int(i) for i in periods]
 
 	usedBitrates = []
-	print qualities
+	qualUpSwitch = 0;
+	qualDownSwitch = 0;
 
 	for x in range(0,len(qualities)):
 		index = [i for i, j in enumerate(bitrates) if qualities[x] in j]
+		#print "index: ", index
 		currRate = float(bitrates[index[0]].split(":")[1])
+		#print "currRate: ", currRate
 		usedBitrates.extend([currRate] * periods[x])
-
+		if(int(qualities[x].split('p')[0]) > int(qualities[x-1].split('p')[0])): 
+			qualUpSwitch += 1
+		elif(int(qualities[x].split('p')[0]) < int(qualities[x-1].split('p')[0])): 
+			qualDownSwitch += 1
+			
+	#print "len(usedBitrates): ", len(usedBitrates)
+	print "qualities", qualities
+	print "qualUpSwitch: ", qualUpSwitch
+	print "qualDownSwitch: ", qualDownSwitch
 	avgBitrate = sum(usedBitrates)/len(usedBitrates)
 	maxBitrate = max(usedBitrates)
 	minBitrate = min(usedBitrates)
@@ -178,10 +196,11 @@ def calculateBitrate(resultDir,prefix, bitrates):
 	q2 = np.percentile(usedBitrates, quant2)
 	q3 = np.percentile(usedBitrates, quant3)
 	q4 = np.percentile(usedBitrates, quant4)
-	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
+	return str(avgBitrate) + "," + str(maxBitrate) + "," + str(minBitrate) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4) + "," + str(qualUpSwitch) + "," + str(qualDownSwitch)
 
-def calculateBuffer(resultDir,prefix):
+def calculateBuffer(resultDir,prefix,quant1,quant2,quant3,quant4):
 	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
+	#print "len(buffertime): ", len(buffertime)
 	avgBuffer = sum(buffertime)/len(buffertime)
 	maxBuffer = max(buffertime)
 	minBuffer = min(buffertime)
@@ -191,7 +210,7 @@ def calculateBuffer(resultDir,prefix):
 	q4 = np.percentile(buffertime, quant4)
 	return str(avgBuffer) + "," + str(maxBuffer) + "," + str(minBuffer) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
 
-def calculateStallings(resultDir,prefix):
+def calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4):
 	[timestamps , playtime, buffertime, avPlaytime] = getBuffer(resultDir,prefix)
 	diffTimestamps = np.diff(timestamps)/1000
 	diffPlaytime = np.diff(playtime)
@@ -203,6 +222,7 @@ def calculateStallings(resultDir,prefix):
 			stallings.append(i)
 
 	numOfStallings = len(stallings)
+	#print "len(stallings)", len(stallings)
 	avgStalling = sum(stallings)/len(stallings)
 	maxStalling = max(stallings)
 	minStalling = min(stallings)
@@ -210,4 +230,6 @@ def calculateStallings(resultDir,prefix):
 	q2 = np.percentile(stallings, quant2)
 	q3 = np.percentile(stallings, quant3)
 	q4 = np.percentile(stallings, quant4)
-	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4)
+	totalStalling = sum(stallings)
+	print "totalStalling: ", totalStalling
+	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4) + "," + str(totalStalling)
