@@ -344,21 +344,21 @@ def run_exp(meta_info, expconfig):
         try:
 
             #PART I - YoMo
-            out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-            print(out_yomo)
-
-            #TODO: parse output before writing to summary JSON
-            towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
-
-            out_yomo_fields = out_yomo.split(",")
-            summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
-
-            if len(out_yomo_fields) == len(summary_yomo_fields):
-                for i in xrange(0,len(out_yomo_fields)-1):
-                    towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
-            else:
-                for i in xrange(0,len(out_yomo_fields)-1):
-                    towrite_data[summary_yomo_fields[i]]="NA"
+            # out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
+            # print(out_yomo)
+            #
+            # #TODO: parse output before writing to summary JSON
+            # towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
+            #
+            # out_yomo_fields = out_yomo.split(",")
+            # summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
+            #
+            # if len(out_yomo_fields) == len(summary_yomo_fields):
+            #     for i in xrange(0,len(out_yomo_fields)-1):
+            #         towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
+            # else:
+            #     for i in xrange(0,len(out_yomo_fields)-1):
+            #         towrite_data[summary_yomo_fields[i]]="NA"
 
 
             #PART II - AStream
@@ -368,19 +368,19 @@ def run_exp(meta_info, expconfig):
 
             #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
             #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            #out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-            #print(out_astream)
-            #towrite_data['TEMPOUTPUT_AStream']=out_astream
+            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
+            print(out_astream)
+            towrite_data['TEMPOUTPUT_AStream']=out_astream
 
-            #out_astream_fields = out_astream.split(",")
-            #summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
+            out_astream_fields = out_astream.split(",")
+            summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
 
-            #if len(out_astream_fields) == len(summary_astream_fields):
-            #    for i in xrange(0,len(out_astream_fields)-1):
-            #        towrite_data[summary_astream_fields[i]]=out_astream_fields[i]
-            #else:
-            #    for i in xrange(0,len(out_astream_fields)-1):
-            #        towrite_data[summary_astream_fields[i]]="NA"
+            if len(out_astream_fields) == len(summary_astream_fields):
+               for i in xrange(0,len(out_astream_fields)-1):
+                   towrite_data[summary_astream_fields[i]]=out_astream_fields[i]
+            else:
+               for i in xrange(0,len(out_astream_fields)-1):
+                   towrite_data[summary_astream_fields[i]]="NA"
 
 
         # towrite_data[]"res_astream_bitrate_mean",
@@ -433,10 +433,6 @@ def run_exp(meta_info, expconfig):
             print ("Execution or parsing failed for "
                    #"config : {}, "
                    "error: {}").format(e)#cfg, e)
-
-
-
-
 
 def create_exp_process(meta_info, expconfig):
     process = Process(target=run_exp, args=(meta_info, expconfig, ))
