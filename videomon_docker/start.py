@@ -61,7 +61,7 @@ EXPCONFIG = {
   "save_metadata_topic": "MONROE.META",
   "save_metadata_resultdir": None,                # set to a dir to enable saving of metadata
   "add_modem_metadata_to_result": False,          # set to True to add one captured modem metadata to nettest result
-  "enabled_interfaces":["eth0"],
+  "enabled_interfaces":["op0","op1","eth0"],
   "disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
@@ -69,8 +69,6 @@ EXPCONFIG = {
                           "wwan0",
                           "wwan1",
                           "wwan2",
-                          "op0",
-                          "op1",
                           "docker0"
                           ],                      # Interfaces to NOT run the experiment on
   "interfaces_without_metadata": ["eth0",
