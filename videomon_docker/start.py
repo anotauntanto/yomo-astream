@@ -79,13 +79,14 @@ EXPCONFIG = {
 
   # These values are specific for this experiment
   "cnf_debug": True,
-  "cnf_video_id": "D8VXDSMyuMk", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
+  "cnf_video_id": "D8YQn7o_AyA", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
   "cnf_astream_algorithm": "Basic",                # Playback type in astream
   "cnf_astream_download": False,                   # Download option for AStream
   "cnf_astream_segment_limit": 2,                  # Segment limit option for AStream
-  "cnf_astream_server_host": "",                   # REQUIRED PARAMETER; Host/IP to connect to for astream
-  "cnf_astream_server_port": "",                   # REQUIRED PARAMETER; Port to connect to for astream
+  "cnf_astream_server_host": "128.39.37.161",      # REQUIRED PARAMETER; Host/IP to connect to for astream
+  "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
   "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the youyube video playback
+  "cnf_yomo_bitrates_kbps": "144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
   "cnf_compress_additional_results": True,         # Whether or not to tar additional log files
@@ -93,6 +94,8 @@ EXPCONFIG = {
   "cnf_q2": 50,
   "cnf_q3": 75,
   "cnf_q4": 90,
+  "cnf_astream_skip": False,
+  "cnf_yomo_skip": False,
 
   "cnf_astream_out_fields": "res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
 res_astream_bitrate_q1,res_astream_bitrate_q2,res_astream_bitrate_q3,res_astream_bitrate_q4,\
@@ -115,9 +118,7 @@ res_astream_numswitches_down",
   res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
   res_yomo_durstalls_total"
 
-
-  #"cnf_yomo_bitrates_KBs": "",              	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
-  #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
+ #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
   #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
   #"cnf_file_astream": "{time}_{ytid}_astream"      # Prefix for AStream logs
   #"cnf_require_modem_metadata": {"DeviceMode": 4},# only run if in LTE (5) or UMTS (4)
@@ -340,49 +341,49 @@ def run_exp(meta_info, expconfig):
         #TODO: run tools and write results into summary JSON
 
         print('Pseudo-running YoMo/AStream')
-        #bitrates="1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10"
-        bitrates="144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167"
 
         try:
 
-            #PART I - YoMo
-            # out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,bitrates,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-            # print(out_yomo)
-            #
-            # #TODO: parse output before writing to summary JSON
-            # towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
-            #
-            # out_yomo_fields = out_yomo.split(",")
-            # summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
-            #
-            # if len(out_yomo_fields) == len(summary_yomo_fields):
-            #     for i in xrange(0,len(out_yomo_fields)-1):
-            #         towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
-            # else:
-            #     for i in xrange(0,len(out_yomo_fields)-1):
-            #         towrite_data[summary_yomo_fields[i]]="NA"
+            if not cfg['cnf_astream_skip']:
+                #PART I - AStream
+
+                #video_id="BigBuckBunny_4s"
+
+                #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
+                #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
+                out_astream=run_astream(cfg['cnf_video_id'],cfg['cnf_astream_server_host'],cfg['cnf_astream_server_port'],cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
+                print(out_astream)
+                #towrite_data['TEMPOUTPUT_AStream']=out_astream
+
+                out_astream_fields = out_astream.split(",")
+                summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
+
+                if len(out_astream_fields) == len(summary_astream_fields):
+                   for i in xrange(0,len(out_astream_fields)-1):
+                       towrite_data[summary_astream_fields[i]]=out_astream_fields[i]
+                else:
+                   for i in xrange(0,len(out_astream_fields)-1):
+                       towrite_data[summary_astream_fields[i]]="NA"
+
+            if not cfg['cnf_yomo_skip']:
+                #PART II - YoMo
+                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
+                print(out_yomo)
+                #towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
+
+                #parse output before writing to summary JSON
+                out_yomo_fields = out_yomo.split(",")
+                summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
+
+                if len(out_yomo_fields) == len(summary_yomo_fields):
+                    for i in xrange(0,len(out_yomo_fields)-1):
+                        towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
+                else:
+                    for i in xrange(0,len(out_yomo_fields)-1):
+                        towrite_data[summary_yomo_fields[i]]="NA"
 
 
-            #PART II - AStream
-            server_host="128.39.37.161"
-            server_port="12345"
-            video_id="BigBuckBunny_4s"
 
-            #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
-            #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
-            out_astream=run_astream(video_id,server_host,server_port,"basic",cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-            print(out_astream)
-            towrite_data['TEMPOUTPUT_AStream']=out_astream
-
-            out_astream_fields = out_astream.split(",")
-            summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
-
-            if len(out_astream_fields) == len(summary_astream_fields):
-               for i in xrange(0,len(out_astream_fields)-1):
-                   towrite_data[summary_astream_fields[i]]=out_astream_fields[i]
-            else:
-               for i in xrange(0,len(out_astream_fields)-1):
-                   towrite_data[summary_astream_fields[i]]="NA"
 
 
         # towrite_data[]"res_astream_bitrate_mean",

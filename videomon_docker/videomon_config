@@ -1,5 +1,5 @@
 {
-"enabled_interfaces": ["eth0"],
+"enabled_interfaces": [“op0,op1”],
 "disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
@@ -7,18 +7,12 @@
                           "wwan0",
                           "wwan1",
                           "wwan2",
-                          "op0",
-                          "op1",
                           "docker0"
                           ],
-  "cnf_video_id": "JTm6QCaNIcc",
+  "cnf_video_id": "D8YQn7o_AyA",
   "cnf_astream_algorithm": "Basic",
   "cnf_astream_download": False,
-  "cnf_astream_segment_limit": 10,
-  "cnf_astream_server_host": "",
-  "cnf_astream_server_port": "",
   "cnf_yomo_playback_duration_s": 10,
-  "cnf_yomo_bitrates_KBs": "",
   "cnf_wait_btw_algorithms_s": 20,
   "cnf_wait_btw_videos_s": 20,
   "cnf_additional_results": True

@@ -259,8 +259,8 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
 
     #subprocess.call("./run_tshark.sh")
 
-    #mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'.mpd'
-    mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
+    mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'/stream.mpd'
+    #mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
     print mpd
 
     # create the log files
