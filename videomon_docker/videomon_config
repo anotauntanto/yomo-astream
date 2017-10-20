@@ -1,6 +1,6 @@
 {
-"enabled_interfaces": ["op0","op1"],
-"disabled_interfaces": ["eth0",
+"enabled_interfaces": ["eth0","op0","op1"],
+"disabled_interfaces": ["eth1",
                           "lo",
                           "metadata",
                           "eth2",

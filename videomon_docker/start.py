@@ -37,6 +37,9 @@ import zmq
 from videomon_yomo import *
 from videomon_astream import *
 
+# Container version
+CONTAINER_VERSION = 'vBETA' #v1.0
+
 # Configuration
 CONFIGFILE = '/monroe/config'
 
@@ -107,14 +110,14 @@ res_astream_numswitches_up,\
 res_astream_numswitches_down",
 
   "cnf_yomo_out_fields": "res_yomo_bitrate_mean,res_yomo_bitrate_max,res_yomo_bitrate_min,\
-  res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
-  res_yomo_numswitches_up,res_yomo_numswitches_down,\
-  res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
-  res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
-  res_yomo_numstalls,\
-  res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
-  res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
-  res_yomo_durstalls_total"
+ res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
+ res_yomo_numswitches_up,res_yomo_numswitches_down,\
+ res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
+ res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
+ res_yomo_numstalls,\
+ res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
+ res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
+ res_yomo_durstalls_total"
 
  #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
   #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
@@ -287,8 +290,9 @@ def run_exp(meta_info, expconfig):
             "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
             "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
             "cnf_video_id": cfg['cnf_video_id'],
-            "TEMPOUTPUT_AStream": "NA",
-            "TEMPOUTPUT_YoMo": "NA",
+            "ContainerVersion": CONTAINER_VERSION,
+            #"TEMPOUTPUT_AStream": "NA",
+            #"TEMPOUTPUT_YoMo": "NA",
             "NodeId": cfg['nodeid'],
             "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]#,
             #,
