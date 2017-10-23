@@ -1,7 +1,7 @@
 
-.aux
-.log
-.out
-.pdf
-.synctex.gz
-.toc
+*.aux
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.toc
