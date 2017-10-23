@@ -293,7 +293,6 @@ def run_exp(meta_info, expconfig):
             "ContainerVersion": CONTAINER_VERSION,
             #"TEMPOUTPUT_AStream": "NA",
             #"TEMPOUTPUT_YoMo": "NA",
-            "NodeId": cfg['nodeid'],
             "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]#,
             #,
             #generate_empty_fields(cfg['cnf_yomo_out_fields'])
