@@ -3,9 +3,13 @@
 
 \subsection{Measurement Setup}
 
+Development nodes: 301, 520
+
+
+\clearpage
 \subsection{Video Preparation}
 
-Table~\ref{tab:videos} lists the videos we have prepared for \ac{DASH}.
+Table~\ref{tab:videos} lists the videos we have prepared for \ac{DASH}. Videos with a duration longer than $5$ minutes were selected.
 
 \begin{table}[h!]
 \centering
@@ -30,7 +34,42 @@ Table~\ref{tab:videos} lists the videos we have prepared for \ac{DASH}.
 \label{tab:videos}
 \end{table}
 
+\textbf{Video1: D8YQn7o\_AyA}
+%Video 1: Deutschland vs Italien Elfmeterschieﬂen, ID: D8YQn7o_AyA, Category: Sport
+\begin{itemize}
+\item Has fragments: 133, 134, 135, 136, 137, 160, 264, 266, 298, 299
+\item No fragments (dropped): 18, 22
+\item Alignment problem, check GOP (dropped): 298, 299
+\item Final: 8 representations (133, 134, 135, 136, 137, 160, 264, 266)
+\end{itemize}
+
+\begin{figure} [h!]
+\caption{Video 1.}
+\includegraphics[width=\textwidth]{graphics/video1}
+\label{fig:video1}
+\end{figure}
+
+\textbf{Video2: 6v2L2UGZJAM}
+%Video 2: Planet Earth: Amazing nature scenery, ID: 6v2L2UGZJAM, Categorie: Documentary
+\begin{itemize}
+\item Has fragments: 133, 134, 135, 136, 137, 160, 212, 213, 214, 215, 216, 217
+\item No fragments (dropped): 18, 22
+\item Alignment problem, check GOP (dropped):
+\end{itemize}
+
+
+
+
+\clearpage
 \subsection{Measurement Campaigns}
+
+Measurement campaign checklist:
+\begin{itemize}
+\item AStream server up
+\item All video \acp{MPD} on AStream server
+\item Config file control
+\item Trial on development node
+\end{itemize}
 
 Table~\ref{tab:measurements} lists the measurement campaigns.
 
@@ -50,6 +89,4 @@ Table~\ref{tab:measurements} lists the measurement campaigns.
 \end{tabular}
 \label{tab:measurements}
 \end{table}
-
-
 
