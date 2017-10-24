@@ -1,3 +1,4 @@
 {
-"enabled_interfaces": ["eth0"]
+"enabled_interfaces": ["eth0"],
+"cnf_tag": "THIS IS A TEST RUN"
   }

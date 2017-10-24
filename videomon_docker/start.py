@@ -33,7 +33,6 @@ import zmq
 
 #sys.path.append('files_yomo')
 #sys.path.append('files_astream')
-
 from videomon_yomo import *
 from videomon_astream import *
 
@@ -53,7 +52,7 @@ EXPCONFIG = {
   "modem_metadata_topic": "MONROE.META.DEVICE.MODEM",
   "dataversion": 2,
   "dataid": "MONROE.EXP.VIDEO",
-  "nodeid": "fake.nodeid",
+  "nodeid": "fake.nodeid.initial",
   "meta_grace": 10,                              # Grace period to wait for interface metadata
   "exp_grace": 600,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
@@ -80,13 +79,14 @@ EXPCONFIG = {
 
   # These values are specific for this experiment
   "cnf_debug": True,
-  "cnf_video_id": "D8YQn7o_AyA", #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",                 # (YouTube) ID of the video to be streamed
+  "cnf_tag": "None",
+  "cnf_video_id": "D8YQn7o_AyA",                   # (YouTube) ID of the video to be streamed #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",
   "cnf_astream_algorithm": "Basic",                # Playback type in astream
   "cnf_astream_download": False,                   # Download option for AStream
   "cnf_astream_segment_limit": 2,                  # Segment limit option for AStream
   "cnf_astream_server_host": "128.39.37.161",      # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
-  "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the youyube video playback
+  "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the YouTube video playback
   "cnf_yomo_bitrates_kbps": "144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
@@ -119,13 +119,8 @@ res_astream_numswitches_down",
  res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
  res_yomo_durstalls_total"
 
- #"cnf_file_database_output": "{time}_{ytid}_summary.json", # Output file to be exported to MONROE database
-  #"cnf_file_yomo": "{time}_{ytid}_yomo",           # Prefix for YoMo logs
-  #"cnf_file_astream": "{time}_{ytid}_astream"      # Prefix for AStream logs
-  #"cnf_require_modem_metadata": {"DeviceMode": 4},# only run if in LTE (5) or UMTS (4)
-  #"cnf_ping_": ,                                  # TODO
-  #"cnf_log_granularity": 10000,                   # TODO
-  #"multi_config_randomize": False,                # Randomize the muliple runs by "multi_config", has no effect without "multi_config" (see below)
+#"cnf_require_modem_metadata": {"DeviceMode": 4},# only run if in LTE (5) or UMTS (4)
+#"multi_config_randomize": False,                # Randomize the muliple runs by "multi_config", has no effect without "multi_config" (see below)
   #"multi_config": [
   #  [
   #    { "cnf_dl_num_flows": 1, "cnf_ul_num_flows": 1 },
@@ -152,9 +147,7 @@ def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outd
     f = NamedTemporaryFile(mode='w+', delete=False, dir=outdir)
     f.write(msg)
     f.close()
-    #mfilename=get_filename(data, postfix, ending, tstamp)
     outfile = os.path.join(outdir, get_filename(data, postfix, ending, tstamp, interface))
-    #print(outfile)
     move_file(f.name, outfile)
 
 def move_file(f, t):
@@ -232,7 +225,7 @@ def check_meta(info, graceperiod, expconfig):
             "Operator" in info and
             "Timestamp" in info and
             time.time() - info["Timestamp"] < graceperiod):
-        print('DBG: testpoint0')
+
         print info
         return False
     if not "require_modem_metadata" in expconfig:
@@ -275,8 +268,7 @@ def run_exp(meta_info, expconfig):
     try:
         if 'cnf_add_to_result' not in cfg:
             cfg['cnf_add_to_result'] = {}
-            print('DBG: testpoint1')
-            #print cfg
+
         cfg['cnf_add_to_result'].update({
             "Guid": cfg['guid'],
             "DataId": cfg['dataid'],
@@ -290,40 +282,33 @@ def run_exp(meta_info, expconfig):
             "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
             "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
             "cnf_video_id": cfg['cnf_video_id'],
+            "cnf_tag": cfg['cnf_tag'],
             "ContainerVersion": CONTAINER_VERSION,
-            #"TEMPOUTPUT_AStream": "NA",
-            #"TEMPOUTPUT_YoMo": "NA",
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]#,
-            #,
-            #generate_empty_fields(cfg['cnf_yomo_out_fields'])
+            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
             })
-        print('DBG: testpoint2')
 
         # Add metadata if requested
         if cfg['add_modem_metadata_to_result']:
-            print('DBG: testpoint3')
+
             for k,v in meta_info.items():
                 cfg['cnf_add_to_result']['info_meta_modem_' + k] = v
-                print('DBG: testpoint4')
+
+        #TODO
 
         # Run traceroute + YoMo, then traceroute + AStream once
         #print ("Running traceroute against YouTube server on interface: {}".format(cfg['modeminterfacename']))
         #run_traceroute(<target1>)
         #print ("Running YoMo with video: {}".format(cfg['cnf_video_id']))
-        #outputs_yomo=run_yomo(<fileprefix,video,playback duration>)
+
         #print ("Running traceroute against AStream server on interface: {}".format(cfg['modeminterfacename']))
         #run_traceroute(<target2>)
         #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
-        #outputs_astream=tream(<video id,server,port,playbacktype,segmentlimit,fileprefix>)
 
-        #TODO: construct filename prefixes for YoMo and AStream
 
-        #towrite_data=dict()
-        #towrite_data['TEMPOUTPUT'] = 'temporary output'
         towrite_data = cfg['cnf_add_to_result']
-        #print(towrite_data)
-
         ifname=meta_info[expconfig["modeminterfacename"]]
+
+        #CM: constructing filename prefixes for YoMo and AStream, and output directory
 
         prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
         prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
@@ -332,29 +317,27 @@ def run_exp(meta_info, expconfig):
         resultdir_videomon=cfg['resultdir']+"videomon/"
         if not os.path.exists(resultdir_videomon):
             os.makedirs(resultdir_videomon)
-        #prefix_yomo=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_yomo_'
-        #prefix_astream=cfg['dataid']+'_'+cfg['cnf_video_id']+'_'+prefix_timestamp+'_astream_'
 
         print('Prefix for YoMo: '+prefix_yomo)
         print('Prefix for AStream: '+prefix_astream)
         print('Temporary result directory: '+resultdir_videomon)
 
-        #TODO: run tools and write results into summary JSON
+        #CM: running AStream and YoMo one after the other
 
-        print('Pseudo-running YoMo/AStream')
+        print(''
+        print('DBG: Running AStream and YoMo')
+        print('-----------------------------')
 
         try:
 
             if not cfg['cnf_astream_skip']:
+
                 #PART I - AStream
+                print(''
+                print('DBG: Running AStream')
 
-                #video_id="BigBuckBunny_4s"
-
-                #run_astream(video_id,server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],"False",ifname,prefix_astream,cfg['resultdir'])
-                #run_astream(cfg['cnf_video_id'],server_host,server_port,cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],ifname,prefix_astream,cfg['resultdir'])
                 out_astream=run_astream(cfg['cnf_video_id'],cfg['cnf_astream_server_host'],cfg['cnf_astream_server_port'],cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
                 print(out_astream)
-                #towrite_data['TEMPOUTPUT_AStream']=out_astream
 
                 out_astream_fields = out_astream.split(",")
                 summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
@@ -367,12 +350,14 @@ def run_exp(meta_info, expconfig):
                        towrite_data[summary_astream_fields[i]]="NA"
 
             if not cfg['cnf_yomo_skip']:
+
                 #PART II - YoMo
+                print(''
+                print('DBG: Running YoMo')
+
                 out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
                 print(out_yomo)
-                #towrite_data['TEMPOUTPUT_YoMo'] = out_yomo
 
-                #parse output before writing to summary JSON
                 out_yomo_fields = out_yomo.split(",")
                 summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
 
@@ -383,48 +368,19 @@ def run_exp(meta_info, expconfig):
                     for i in xrange(0,len(out_yomo_fields)-1):
                         towrite_data[summary_yomo_fields[i]]="NA"
 
-
-
-
-
-        # towrite_data[]"res_astream_bitrate_mean",
-        #   "res_astream_bitrate_max":,
-        #   "res_astream_bitrate_min":,
-        #   "res_astream_bitrate_q1":,
-        #   "res_astream_bitrate_q2":,
-        #   "res_astream_bitrate_q3":,
-        #   "res_astream_bitrate_q4":,
-        #   "res_astream_buffer_mean",
-        #   "res_astream_buffer_max":,
-        #   "res_astream_buffer_min":,
-        #   "res_astream_buffer_q1":,
-        #   "res_astream_buffer_q2":,
-        #   "res_astream_buffer_q3":,
-        #   "res_astream_buffer_q4":,
-        #   "res_astream_numstalls":,
-        #   "res_astream_durstalls_mean",
-        #   "res_astream_durstalls_max":,
-        #   "res_astream_durstalls_min":,
-        #   "res_astream_durstalls_q1":,
-        #   "res_astream_durstalls_q2":,
-        #   "res_astream_durstalls_q3":,
-        #   "res_astream_durstalls_q4":,
-
         except Exception as e:
             if cfg['verbosity'] > 0:
                 print ("Execution or parsing failed for error: {}").format(e)
 
         towrite_data['Interface']=ifname
-        #print(towrite_data)
-        #towrite_file='/monroe/results/temp_log.json'
-        #write_json(towrite_data,towrite_file)
 
-        #TODO: compress outputs other than summary JSON
+        #CM: compressing all outputs other than summary JSON
+
         if 'cnf_compress_additional_results' in cfg and cfg['cnf_compress_additional_results']:
-            #with tarfile.open(os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), mode='w:gz') as tar:
             files_to_compress=resultdir_videomon+cfg['dataid']+"*"
-            #    #tar.add(cfg['resultdir'], recursive=False)
-            #    tar.add(files_to_compress)
+            #with tarfile.open(os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), mode='w:gz') as tar:
+            #tar.add(cfg['resultdir'], recursive=False)
+            #tar.add(files_to_compress)
 
             shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)), format='gztar', root_dir=resultdir_videomon,base_dir="./")
             shutil.rmtree(resultdir_videomon)
@@ -443,18 +399,17 @@ def create_exp_process(meta_info, expconfig):
     process.daemon = True
     return process
 
-
 #Main functions
 
 if __name__ == '__main__':
     """The main thread controling the processes (experiment/metadata)."""
 
-    #try:
-    #    with open(CONFIGFILE) as configfd:
-    #        EXPCONFIG.update(json.load(configfd))
-    #except Exception as e:
-    #    print("Cannot retrive expconfig {}".format(e))
-    #    raise e
+    try:
+       with open(CONFIGFILE) as configfd:
+           EXPCONFIG.update(json.load(configfd))
+    except Exception as e:
+       print("Cannot retrive expconfig {}".format(e))
+       raise e
 
     # Short hand variables and check so we have all variables we need
     try:
@@ -475,21 +430,21 @@ if __name__ == '__main__':
         print("Missing expconfig variable {}".format(e))
         raise e
 
-    #TODO
-
     tot_start_time = time.time()
     for ifname in enabled_interfaces: #netifaces.interfaces():
-        print(ifname)
+        if EXPCONFIG['verbosity'] > 1:
+            print("Interface {} is enabled".format(ifname))
+
         # Skip disabled interfaces
         if ifname in disabled_interfaces:
             if EXPCONFIG['verbosity'] > 1:
                 print("Interface is disabled, skipping {}".format(ifname))
             continue
 
-        if 'enabled_interfaces' in EXPCONFIG and not ifname in EXPCONFIG['enabled_interfaces']:
-            if EXPCONFIG['verbosity'] > 1:
-                print("Interface is not enabled, skipping {}".format(ifname))
-            continue
+        # if 'enabled_interfaces' in EXPCONFIG and not ifname in EXPCONFIG['enabled_interfaces']:
+        #     if EXPCONFIG['verbosity'] > 1:
+        #         print("Interface is not enabled, skipping {}".format(ifname))
+        #     continue
 
         # Interface is not up we just skip that one
         if not check_if(ifname):
