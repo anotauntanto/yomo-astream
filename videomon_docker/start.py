@@ -36,10 +36,9 @@ import zmq
 from videomon_yomo import *
 from videomon_astream import *
 
-# Container version
-CONTAINER_VERSION = 'vBETA' #v1.0
-
 # Configuration
+DEBUG = False
+CONTAINER_VERSION = 'vBETA' #v1.0
 CONFIGFILE = '/monroe/config'
 
 # Default values (overwritable from the scheduler)
@@ -57,7 +56,7 @@ EXPCONFIG = {
   "exp_grace": 600,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
   "time_between_experiments": 0,
-  "verbosity": 2,                                 # 0 = "Mute", 1=error, 2=Information, 3=verbose
+  "verbosity": 3,                                 # 0 = "Mute", 1=error, 2=Information, 3=verbose
   "resultdir": "/monroe/results/",
   "modeminterfacename": "InternalInterface",
   "save_metadata_topic": "MONROE.META",
@@ -78,7 +77,6 @@ EXPCONFIG = {
   "timestamp": time.gmtime(),
 
   # These values are specific for this experiment
-  "cnf_debug": True,
   "cnf_tag": "None",
   "cnf_video_id": "D8YQn7o_AyA",                   # (YouTube) ID of the video to be streamed #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",
   "cnf_astream_algorithm": "Basic",                # Playback type in astream
@@ -157,12 +155,12 @@ def move_file(f, t):
     except:
         traceback.print_exc()
 
-def copy_file(f, t):
-    try:
-        shutil.copyfile(f, t)
-        os.chmod(t, 0o644)
-    except:
-        traceback.print_exc()
+# def copy_file(f, t):
+#     try:
+#         shutil.copyfile(f, t)
+#         os.chmod(t, 0o644)
+#     except:
+#         traceback.print_exc()
 
 def metadata(meta_ifinfo, ifname, expconfig):
     """Seperate process that attach to the ZeroMQ socket as a subscriber.
@@ -257,6 +255,11 @@ def create_meta_process(ifname, expconfig):
     process.daemon = True
     return (meta_info, process)
 
+def create_exp_process(meta_info, expconfig):
+    process = Process(target=run_exp, args=(meta_info, expconfig, ))
+    process.daemon = True
+    return process
+
 #TODO
 
 def run_exp(meta_info, expconfig):
@@ -265,6 +268,8 @@ def run_exp(meta_info, expconfig):
     """
 
     cfg = expconfig.copy()
+    output = None
+
     try:
         if 'cnf_add_to_result' not in cfg:
             cfg['cnf_add_to_result'] = {}
@@ -286,6 +291,15 @@ def run_exp(meta_info, expconfig):
             "ContainerVersion": CONTAINER_VERSION,
             "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
             })
+
+        if 'ICCID' in meta_info:
+            cfg['cnf_add_to_result']['Iccid'] = meta_info["ICCID"]
+        if 'Operator' in meta_info:
+            cfg['cnf_add_to_result']['Operator'] = meta_info["Operator"]
+        if 'IMSIMCCMNC' in meta_info:
+            cfg['cnf_add_to_result']['IMSIMCCMNC'] = meta_info["IMSIMCCMNC"]
+        if 'NWMCCMNC' in meta_info:
+            cfg['cnf_add_to_result']['NWMCCMNC'] = meta_info["NWMCCMNC"]
 
         # Add metadata if requested
         if cfg['add_modem_metadata_to_result']:
@@ -318,26 +332,34 @@ def run_exp(meta_info, expconfig):
         if not os.path.exists(resultdir_videomon):
             os.makedirs(resultdir_videomon)
 
-        print('Prefix for YoMo: '+prefix_yomo)
-        print('Prefix for AStream: '+prefix_astream)
-        print('Temporary result directory: '+resultdir_videomon)
+        if cfg['verbosity'] > 1:
+            print('')
+            print('-----------------------------')
+            print('DBG: Prefix for YoMo: '+prefix_yomo)
+            print('DBG: Prefix for AStream: '+prefix_astream)
+            print('DBG: Temporary result directory: '+resultdir_videomon)
+            print('DBG: Running AStream and YoMo')
+            print('-----------------------------')
 
         #CM: running AStream and YoMo one after the other
-
-        print(''
-        print('DBG: Running AStream and YoMo')
-        print('-----------------------------')
-
         try:
 
             if not cfg['cnf_astream_skip']:
 
                 #PART I - AStream
-                print(''
-                print('DBG: Running AStream')
+                if cfg['verbosity'] > 1:
+                    print('')
+                    print('-----------------------------')
+                    print('DBG: Running AStream')
+                    print('-----------------------------')
 
                 out_astream=run_astream(cfg['cnf_video_id'],cfg['cnf_astream_server_host'],cfg['cnf_astream_server_port'],cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-                print(out_astream)
+                if cfg['verbosity'] > 2:
+                    print('')
+                    print('-----------------------------')
+                    print('DBG: AStream output:')
+                    print('-----------------------------')
+                    print(out_astream)
 
                 out_astream_fields = out_astream.split(",")
                 summary_astream_fields = cfg['cnf_astream_out_fields'].split(",")
@@ -352,11 +374,20 @@ def run_exp(meta_info, expconfig):
             if not cfg['cnf_yomo_skip']:
 
                 #PART II - YoMo
-                print(''
-                print('DBG: Running YoMo')
+
+                if cfg['verbosity'] > 1:
+                    print('')
+                    print('-----------------------------')
+                    print('DBG: Running YoMo')
+                    print('-----------------------------')
 
                 out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-                print(out_yomo)
+                if cfg['verbosity'] > 2:
+                    print('')
+                    print('-----------------------------')
+                    print('DBG: YoMo output')
+                    print('-----------------------------')
+                    print(out_yomo)
 
                 out_yomo_fields = out_yomo.split(",")
                 summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
@@ -386,7 +417,13 @@ def run_exp(meta_info, expconfig):
             shutil.rmtree(resultdir_videomon)
             #os.remove(cfg['resultdir'])
 
-        save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
+        if not DEBUG:
+            print('')
+            print('-----------------------------')
+            print('DBG: Saving results')
+            print('-----------------------------')
+            
+            save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
 
     except Exception as e:
         if cfg['verbosity'] > 0:
@@ -394,22 +431,23 @@ def run_exp(meta_info, expconfig):
                    #"config : {}, "
                    "error: {}").format(e)#cfg, e)
 
-def create_exp_process(meta_info, expconfig):
-    process = Process(target=run_exp, args=(meta_info, expconfig, ))
-    process.daemon = True
-    return process
-
-#Main functions
+#Main function
 
 if __name__ == '__main__':
     """The main thread controling the processes (experiment/metadata)."""
+    if not DEBUG:
+        import monroe_exporter
 
-    try:
-       with open(CONFIGFILE) as configfd:
-           EXPCONFIG.update(json.load(configfd))
-    except Exception as e:
-       print("Cannot retrive expconfig {}".format(e))
-       raise e
+        try:
+            with open(CONFIGFILE) as configfd:
+                EXPCONFIG.update(json.load(configfd))
+        except Exception as e:
+            print("Cannot retrive expconfig {}".format(e))
+            #raise e
+            sys.exit(1)
+    else:
+        #CM: debug mode on, we do not read config file
+        EXPCONFIG['verbosity'] = 3
 
     # Short hand variables and check so we have all variables we need
     try:
