@@ -1,4 +1,4 @@
 {
 "enabled_interfaces": ["eth0"],
-"cnf_tag": "THIS IS A TEST RUN"
+"cnf_tag": "Test run on local machine"
   }
