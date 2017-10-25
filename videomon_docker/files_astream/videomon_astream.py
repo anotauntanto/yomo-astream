@@ -1,14 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Author: Andra Lutu (based on a template from Jonas Karlsson)
-# Date: October 2016
-
-# Updates: Cise Midoglu, August 2017
-
+# Author: Cise Midoglu (based on code by Parikshit Juluri, Andra Lutu, Jonas Karlsson)
+# Date: October 2017
 # License: GNU General Public License v3
 # Developed for use by the EU H2020 MONROE project
-
 
 """
 Simple experiment template to collect metdata and run an experiment.
@@ -43,10 +39,10 @@ import numpy
 MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
 DOWNLOAD_CHUNK = 1024
 DOWNLOAD = False
-#SEGMENT_LIMIT = 100
+SEGMENT_LIMIT = 100
+WAIT_SECONDS = 5
 #exp_grace = 120
-ifup_interval_check = 5
-wait_after_exp_s = 5
+#ifup_interval_check = 5
 
 class DashPlayback:
     """
@@ -60,7 +56,7 @@ class DashPlayback:
         self.audio = dict()
         self.video = dict()
 
-def start_playback_smart(dash_player, dp_object, domain, playback_type=None, download=False, video_segment_duration=None, ifname=None, SEGMENT_LIMIT=100):
+def start_playback_smart(dash_player, dp_object, domain, playback_type=None, download=False, video_segment_duration=None, ifname=None, segment_limit=SEGMENT_LIMIT):
     """ Module that downloads the MPD-FIle and download
         all the representations of the Module to download
         the MPEG-DASH media.
@@ -76,11 +72,7 @@ def start_playback_smart(dash_player, dp_object, domain, playback_type=None, dow
         :param video_segment_duration: Playback duration of each segment
         :return:
     """
-    # Initialize the DASH buffer
-    # AEL -- moved this to run_exp function to integrate interaction with MONROE
-    # config_dash.LOG.info("Initializing the DASH buffer...")
-    # dash_player = dash_buffer.DashPlayer(dp_object.playback_duration, video_segment_duration)
-    # dash_player.start()
+
     # A folder to save the segments in
     file_identifier = id_generator(ifname)
     config_dash.LOG.info("The segments are stored in %s" % file_identifier)
@@ -121,10 +113,10 @@ def start_playback_smart(dash_player, dp_object, domain, playback_type=None, dow
         #write_json()
         if not previous_bitrate:
             previous_bitrate = current_bitrate
-        if SEGMENT_LIMIT:
+        if segment_limit:
             if not dash_player.segment_limit:
-                dash_player.segment_limit = int(SEGMENT_LIMIT)
-            if segment_number > int(SEGMENT_LIMIT):
+                dash_player.segment_limit = int(segment_limit)
+            if segment_number > int(segment_limit):
                 config_dash.LOG.info("Segment limit reached")
                 break
         if segment_number == dp_object.video[bitrate].start:
@@ -295,28 +287,12 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
         print("DBG: testpoint astream4-run_exp")
             # ifname = meta_info[expconfig["modeminterfacename"]]
 
+        # Initialize the DASH buffer
         config_dash.LOG.info("Initializing the DASH buffer...")
         dash_player = dash_buffer.DashPlayer(dp_object.playback_duration, video_segment_duration)
         dash_player.start()
-                # # AEL: adding meta-info to dash json output -- tracking "played" segments
-                # scriptname = expconfig['script'].replace('/', '.')
-                # dataid = expconfig.get('dataid', scriptname)
-                # dataversion = expconfig.get('dataversion', 1)
-                #
-                # config_dash.JSON_HANDLE['MONROE'].append({
-                #     "Guid": expconfig['guid'],
-                #     "DataId": dataid,
-                #     "DataVersion": dataversion,
-                #     "NodeId": expconfig['nodeid'],
-                #     "Timestamp": time.time(),
-                #     "Iccid": "fakeICCID",#meta_info["ICCID"],
-                #     "NWMCCMNC": meta_info["NWMCCMNC"], # modify to MCCMNC from SIM
-                #     "InterfaceName": ifname,
-                #     "Operator": meta_info["Operator"],
-                #     "SequenceNumber": 1
-                # })
 
-                # start the DASH player, according to the selected playback_type
+        # start the DASH player, according to the selected playback_type
         if "all" in playback_type.lower():
             if mpd_file:
                 config_dash.LOG.critical("Start ALL Parallel PLayback")
@@ -353,7 +329,7 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
 
     elapsed = time.time() - start_time_exp
     config_dash.LOG.info("Finished {} after {}".format(ifname, elapsed))
-    time.sleep(wait_after_exp_s)
+    time.sleep(WAIT_SECONDS)
     config_dash.LOG.info("Exiting")
 
     #TODO: rename output files with prefix

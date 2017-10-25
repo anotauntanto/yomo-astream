@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Authors: Cise Midoglu, Anika Schwind (based on a MONROE template)
-# Date: August 2017
+# Date: October 2017
 # License: GNU General Public License v3
 # Developed for use by the EU H2020 MONROE project
 
@@ -46,12 +46,12 @@ CONFIGFILE = '/monroe/config'
 # other processes are started
 EXPCONFIG = {
   # The following values are specific to the MONROE platform
-  "guid": "no.guid.in.config.file",               # Should be overridden by scheduler
+  "guid": "fake.guid",               # Should be overridden by scheduler
   "zmqport": "tcp://172.17.0.1:5556",
   "modem_metadata_topic": "MONROE.META.DEVICE.MODEM",
   "dataversion": 2,
   "dataid": "MONROE.EXP.VIDEO",
-  "nodeid": "fake.nodeid.initial",
+  "nodeid": "fake.nodeid",
   "meta_grace": 10,                              # Grace period to wait for interface metadata
   "exp_grace": 600,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
@@ -108,14 +108,14 @@ res_astream_numswitches_up,\
 res_astream_numswitches_down",
 
   "cnf_yomo_out_fields": "res_yomo_bitrate_mean,res_yomo_bitrate_max,res_yomo_bitrate_min,\
- res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
- res_yomo_numswitches_up,res_yomo_numswitches_down,\
- res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
- res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
- res_yomo_numstalls,\
- res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
- res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
- res_yomo_durstalls_total"
+res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
+res_yomo_numswitches_up,res_yomo_numswitches_down,\
+res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
+res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
+res_yomo_numstalls,\
+res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
+res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
+res_yomo_durstalls_total"
 
 #"cnf_require_modem_metadata": {"DeviceMode": 4},# only run if in LTE (5) or UMTS (4)
 #"multi_config_randomize": False,                # Randomize the muliple runs by "multi_config", has no effect without "multi_config" (see below)
@@ -244,8 +244,8 @@ def add_manual_metadata_information(info, ifname, expconfig):
        Normally eth0 and wlan0.
     """
     info[expconfig["modeminterfacename"]] = ifname
-    info["Operator"] = "fake.Operator"
-    info["ICCID"] = "fake.ICCID"
+    info["Operator"] = "fake.operator"
+    info["ICCID"] = "fake.iccid"
     info["Timestamp"] = time.time()
 
 def create_meta_process(ifname, expconfig):
@@ -279,8 +279,6 @@ def run_exp(meta_info, expconfig):
             "DataId": cfg['dataid'],
             "DataVersion": cfg['dataversion'],
             "NodeId": cfg['nodeid'],
-            "Iccid": meta_info["ICCID"],
-            "Operator": meta_info["Operator"],
             "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
             "Interface": cfg['modeminterfacename'],
             "cnf_astream_server_host": cfg['cnf_astream_server_host'],
@@ -418,11 +416,12 @@ def run_exp(meta_info, expconfig):
             #os.remove(cfg['resultdir'])
 
         if not DEBUG:
-            print('')
-            print('-----------------------------')
-            print('DBG: Saving results')
-            print('-----------------------------')
-            
+            if cfg['verbosity'] > 1:
+                print('')
+                print('-----------------------------')
+                print('DBG: Saving results')
+                print('-----------------------------')
+
             save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
 
     except Exception as e:
@@ -448,6 +447,12 @@ if __name__ == '__main__':
     else:
         #CM: debug mode on, we do not read config file
         EXPCONFIG['verbosity'] = 3
+
+    if EXPCONFIG['verbosity'] > 1:
+        print('')
+        print('-----------------------------')
+        print('DBG: Starting VideoMon container')
+        print('-----------------------------')
 
     # Short hand variables and check so we have all variables we need
     try:
