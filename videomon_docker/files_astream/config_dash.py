@@ -63,7 +63,7 @@ JSON_HANDLE['playback_info'] = {'start_time': None,
                                 }
 # AEL -- adding MONROE modem info to the output JSON
 # AEL -- need to change this to be a list
-JSON_HANDLE['MONROE'] = list() # list of dictionaries
+#JSON_HANDLE['MONROE'] = list() # list of dictionaries
 # {
 #             "Guid": None,
 #             "DataId": None,

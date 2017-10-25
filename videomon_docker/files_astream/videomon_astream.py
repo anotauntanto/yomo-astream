@@ -351,7 +351,7 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     return out
     #return "Fake output from AStream"
 
-# Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
+# Calculate average, max, min, quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
 def getOutput(resultdir,prefix,q1,q2,q3,q4):
 	out = calculateBitrate(resultdir,prefix,q1,q2,q3,q4) + "," + calculateBuffer(resultdir,prefix,q1,q2,q3,q4) + "," + calculateStallings(resultdir,prefix,q1,q2,q3,q4)
 	return out
@@ -378,7 +378,6 @@ def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
     bitrates_q3=numpy.percentile(bitrates, q3)
     bitrates_q4=numpy.percentile(bitrates, q4)
 
-    #return "TEMPOUTPUT_bitrate "
     return str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
 
 def calculateBuffer(resultdir,prefix,q1,q2,q3,q4):
@@ -395,8 +394,26 @@ def calculateStallings(resultdir,prefix,q1,q2,q3,q4):
     down_shifts = playback_info['down_shifts']
     up_shifts = playback_info['up_shifts']
 
-    #return "TEMPOUTPUT_stallings"
-    return str(num_stalls) + ",NA,NA,NA,NA,NA,NA,NA," + str(stalls_total_duration) + "," + str(up_shifts) + "," + str(down_shifts)
+    durstalls = []
+
+    if num_stalls > 0:
+        events = interruptions['events']
+        for event in events:
+            if (event[0] is not None) and (event[1] is not None):
+                durstall_current = event[1] - event[0]
+                durstalls.append(durstall_current)
+    else:
+        durstalls.append(0)
+
+    durstalls_avg=numpy.mean(durstalls)
+    durstalls_max=max(durstalls)
+    durstalls_min=min(durstalls)
+    durstalls_q1=numpy.percentile(durstalls, q1)
+    durstalls_q2=numpy.percentile(durstalls, q2)
+    durstalls_q3=numpy.percentile(durstalls, q3)
+    durstalls_q4=numpy.percentile(durstalls, q4)
+
+    return str(num_stalls) + "," + str(durstalls_avg) + "," + str(durstalls_max) + "," + str(durstalls_min) + "," + str(durstalls_q1) + "," + str(durstalls_q2) + "," + str(durstalls_q3) + "," + str(durstalls_q4) + "," + str(stalls_total_duration) + "," + str(up_shifts) + "," + str(down_shifts)
 
 def configure_log_file(resultdir, playback_type="", log_file=config_dash.LOG_FILENAME):
     """ Module to configure the log file and the log parameters.

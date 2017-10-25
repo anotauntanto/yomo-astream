@@ -56,7 +56,7 @@ EXPCONFIG = {
   "exp_grace": 600,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
   "time_between_experiments": 0,
-  "verbosity": 3,                                 # 0 = "Mute", 1=error, 2=Information, 3=verbose
+  "verbosity": 3,                                 # 0 = "Mute", 1=error, 2=information, 3=verbose
   "resultdir": "/monroe/results/",
   "modeminterfacename": "InternalInterface",
   "save_metadata_topic": "MONROE.META",
