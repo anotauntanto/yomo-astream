@@ -1,4 +1,5 @@
 {
 "enabled_interfaces": ["eth0"],
-"cnf_tag": "Test run on local machine"
-  }
+"cnf_tag": "Test run on local machine",
+"cnf_yomo_skip": "True"
+}

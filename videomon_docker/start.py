@@ -41,6 +41,7 @@ DEBUG = False
 CONTAINER_VERSION = 'vBETA' #v1.0
 CONFIGFILE = '/monroe/config'
 
+PLAYBACK= 'BASIC'
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
 # other processes are started
@@ -79,13 +80,14 @@ EXPCONFIG = {
   # These values are specific for this experiment
   "cnf_tag": "None",
   "cnf_video_id": "D8YQn7o_AyA",                   # (YouTube) ID of the video to be streamed #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",
-  "cnf_astream_algorithm": "Basic",                # Playback type in astream
+  "cnf_astream_algorithm": PLAYBACK,                # Playback type in astream
   "cnf_astream_download": False,                   # Download option for AStream
   "cnf_astream_segment_limit": 2,                  # Segment limit option for AStream
   "cnf_astream_server_host": "128.39.37.161",      # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
   "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the YouTube video playback
-  "cnf_yomo_bitrates_kbps": "144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
+  "cnf_yomo_bitrates_kbps": "144p:114.792,240p:250.618,360p:606.343,480p:1166.528,720p:2213.150,1080p:4018.795,1440p:9489.022,2160p:21322.799",
+  #"144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
   "cnf_compress_additional_results": True,         # Whether or not to tar additional log files
@@ -104,8 +106,7 @@ res_astream_numstalls,\
 res_astream_durstalls_mean,res_astream_durstalls_max,res_astream_durstalls_min,\
 res_astream_durstalls_q1,res_astream_durstalls_q2,res_astream_durstalls_q3,res_astream_durstalls_q4,\
 res_astream_durstalls_total,\
-res_astream_numswitches_up,\
-res_astream_numswitches_down",
+res_astream_numswitches_up,res_astream_numswitches_down",
 
   "cnf_yomo_out_fields": "res_yomo_bitrate_mean,res_yomo_bitrate_max,res_yomo_bitrate_min,\
 res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
@@ -352,6 +353,7 @@ def run_exp(meta_info, expconfig):
                     print('-----------------------------')
 
                 out_astream=run_astream(cfg['cnf_video_id'],cfg['cnf_astream_server_host'],cfg['cnf_astream_server_port'],cfg['cnf_astream_algorithm'],cfg['cnf_astream_segment_limit'],cfg['cnf_astream_download'],prefix_astream,ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
+
                 if cfg['verbosity'] > 2:
                     print('')
                     print('-----------------------------')

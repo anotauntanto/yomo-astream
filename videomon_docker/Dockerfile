@@ -19,6 +19,7 @@ RUN apt-get install -y libblas-dev liblapack-dev liblapacke-dev gfortran
 RUN apt-get install -y python-pip 
 RUN pip install numpy
 RUN pip install psutil
+RUN pip install pandas
 
 COPY start.py /opt/monroe/
 COPY files_yomo /opt/monroe/

@@ -34,6 +34,8 @@ from adaptation.adaptation import WeightedMean
 import subprocess
 from subprocess import call
 import numpy
+#import csv
+import pandas
 
 # Globals for arg parser with the default values
 MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
@@ -241,8 +243,6 @@ def print_representations(dp_object):
 
 def run_astream(video_id,server_host,server_port,algorithm,segment_limit,download,prefix,ifname,resultdir,q1,q2,q3,q4):
 
-    print("DBG: testpoint run_astream")
-
     #TODO: start tshark
     #callTshark = "tshark -n -i " + ifname + "-E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + prefix + "_tshark_.txt  2>" + prefix + "_tshark_error.txt &"
 
@@ -257,8 +257,8 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
 
     # create the log files
     playback_type=algorithm.lower()
-    configure_log_file(resultdir, playback_type=algorithm.lower(), log_file=config_dash.LOG_FILENAME)
-    config_dash.JSON_HANDLE['playback_type'] = algorithm.lower()
+    configure_log_file(resultdir, playback_type, config_dash.LOG_FILENAME)
+    config_dash.JSON_HANDLE['playback_type'] = playback_type
     config_dash.LOG.info("Starting AStream container")
     config_dash.LOG.info("Starting Experiment Run on if : {}".format(ifname))
 
@@ -324,7 +324,7 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
         #        time.sleep(ifup_interval_check)
 
     except Exception as e:
-        print ("DBG: mpd read problem")
+        print ("DBG: AStream MPD read problem")
         print (e)
 
     elapsed = time.time() - start_time_exp
@@ -332,28 +332,23 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     time.sleep(WAIT_SECONDS)
     config_dash.LOG.info("Exiting")
 
-    #TODO: rename output files with prefix
-    print("DBG: renaming output files")
+    #Renaming output files with prefix
+    print("DBG: AStream - renaming output files")
     os.rename(resultdir + '_buffer.csv', resultdir + prefix + '_buffer.csv')
     os.rename(resultdir + '_segments.json', resultdir + prefix + '_segments.json')
     os.rename(resultdir + '_runtime.log', resultdir + prefix + '_runtime.log')
 
-
-
     #TODO: prepare output 7xbitrate, 7xbuffer, 1xnumstall, 7xduration
-    out = getOutput(resultdir,prefix,q1,q2,q3,q4)
-    #print("DBG: getOutput method")
-    #print(out)
+    out = getOutput(resultdir,prefix,q1,q2,q3,q4,video_segment_duration)
 
     #TODO: kill Tshark
     #sys.exit(0)
 
     return out
-    #return "Fake output from AStream"
 
 # Calculate average, max, min, quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls
-def getOutput(resultdir,prefix,q1,q2,q3,q4):
-	out = calculateBitrate(resultdir,prefix,q1,q2,q3,q4) + "," + calculateBuffer(resultdir,prefix,q1,q2,q3,q4) + "," + calculateStallings(resultdir,prefix,q1,q2,q3,q4)
+def getOutput(resultdir,prefix,q1,q2,q3,q4,segment_duration):
+	out = calculateBitrate(resultdir,prefix,q1,q2,q3,q4) + "," + calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration) + "," + calculateStallings(resultdir,prefix,q1,q2,q3,q4)
 	return out
 
 def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
@@ -366,7 +361,7 @@ def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
     segment_info = clientlog["segment_info"]
     for segment in segment_info:
         if 'init' not in segment[0]:
-            bitrates.append(segment[1])
+            bitrates.append(segment[1]/1000)
             #print segment[0], segment[1]
             #file_out_bitrates.write(str(segment[1]) + '\n')
 
@@ -380,8 +375,74 @@ def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
 
     return str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
 
-def calculateBuffer(resultdir,prefix,q1,q2,q3,q4):
-    return "NA,NA,NA,NA,NA,NA,NA"
+def calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration):
+    try:
+
+        csvfile = pandas.read_csv(resultdir + prefix + "_buffer.csv")
+        epoch_time = csvfile.EpochTime
+        current_playback_time = csvfile.CurrentPlaybackTime
+        current_buffer_size = csvfile.CurrentBufferSize
+        current_playback_state = csvfile.CurrentPlaybackState
+        action = csvfile.Action
+
+        # csvfile= csv.reader(open(resultdir + prefix + "_buffer.csv", 'r'), delimiter=',')
+        # epoch_time = list(zip(*csvfile))[0]
+        # current_playback_time = list(zip(*csvfile))[1]
+        # current_buffer_size = list(zip(*csvfile))[2]
+        # current_playback_state = list(zip(*csvfile))[3]
+        # action = list(zip(*csvfile))[4]
+
+        indices_buffering = [i for i, x in enumerate(current_playback_state) if x == "BUFFERING"]
+        indices_playing = [i for i, x in enumerate(current_playback_state) if x == "PLAY"]
+        indices_stopping = [i for i, x in enumerate(current_playback_state) if x == "STOP"]
+        indices_writing = [i for i, x in enumerate(action) if x == "Writing"]
+        indices_transition = [i for i, x in enumerate(action) if x == "-"]
+
+        isnotbuffering = 1
+        iswriting = 0
+        isplaying = 0
+
+        buffers = [current_buffer_size[0]]
+
+        for i in range(1, len(epoch_time)):
+
+            if i in indices_buffering and i not in indices_transition:
+                isnotbuffering = 0
+            if i in indices_writing:
+                iswriting = 1
+            if ((i in indices_playing or i in indices_stopping) and i not in indices_transition) or i in indices_buffering or i in indices_transition:
+                isplaying = 1
+
+            current_buffer_s = isnotbuffering * buffers[i-1] + iswriting * segment_duration - isplaying * (epoch_time[i] - epoch_time[i-1])
+            buffers.append(current_buffer_s)
+
+        #interpolating to 1s granularity
+        x_interp = range(0,int(epoch_time[len(epoch_time)-1])+1)
+        buffers_interp=numpy.interp(x_interp,epoch_time,buffers)
+
+        # buffers_avg=numpy.mean(buffers)
+        # buffers_max=max(buffers)
+        # buffers_min=min(buffers)
+        # buffers_q1=numpy.percentile(buffers, q1)
+        # buffers_q2=numpy.percentile(buffers, q2)
+        # buffers_q3=numpy.percentile(buffers, q3)
+        # buffers_q4=numpy.percentile(buffers, q4)
+
+        buffers_avg=numpy.mean(buffers_interp)
+        buffers_max=max(buffers_interp)
+        buffers_min=min(buffers_interp)
+        buffers_q1=numpy.percentile(buffers_interp, q1)
+        buffers_q2=numpy.percentile(buffers_interp, q2)
+        buffers_q3=numpy.percentile(buffers_interp, q3)
+        buffers_q4=numpy.percentile(buffers_interp, q4)
+
+        #print str(buffers_avg) + "," + str(buffers_max) + "," + str(buffers_min) + "," + str(buffers_q1) + "," + str(buffers_q2) + "," + str(buffers_q3) + "," + str(buffers_q4)
+        return str(buffers_avg) + "," + str(buffers_max) + "," + str(buffers_min) + "," + str(buffers_q1) + "," + str(buffers_q2) + "," + str(buffers_q3) + "," + str(buffers_q4)
+
+    except Exception as e:
+        print ("DBG: AStream calculateBuffer exception")
+        print (e)
+        return "NA,NA,NA,NA,NA,NA,NA"
 
 def calculateStallings(resultdir,prefix,q1,q2,q3,q4):
     json_in = open(resultdir + prefix + "_segments.json")

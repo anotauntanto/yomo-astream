@@ -1,20 +1,7 @@
 {
-"enabled_interfaces": ["eth0","op0","op1"],
-"disabled_interfaces": ["eth1",
-                          "lo",
-                          "metadata",
-                          "eth2",
-                          "wlan0",
-                          "wwan0",
-                          "wwan1",
-                          "wwan2",
-                          "docker0"
-                          ],
-  "cnf_video_id": "D8YQn7o_AyA",
-  "cnf_astream_algorithm": "Basic",
-  "cnf_astream_download": False,
-  "cnf_yomo_playback_duration_s": 10,
-  "cnf_wait_btw_algorithms_s": 20,
-  "cnf_wait_btw_videos_s": 20,
-  "cnf_additional_results": True
-  }
+"enabled_interfaces":["op0","op1"],
+"cnf_tag": "Preliminary measurement campaign, start date: 25.10.2017",
+"cnf_video_id":"D8YQn7o_AyA",
+"cnf_yomo_playback_duration_s":-1,
+"cnf_astream_segment_limit":200
+}
