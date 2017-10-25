@@ -62,7 +62,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		browser.get(url) 
 
 		# debug
-		browser.get_screenshot_as_file(resultDir + 'screenshot0.png')
+		#browser.get_screenshot_as_file(resultDir + 'screenshot0.png')
 		#browser.execute_script(js)
 		#browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
 		#browser.get_screenshot_as_file(resultDir + 'screenshot2.png')
@@ -72,7 +72,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		
 		browser.execute_script(js)
 		time.sleep(duration)
-		browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
+		#browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
 		print "video playback ended"
 
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
@@ -216,20 +216,30 @@ def calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4):
 	diffPlaytime = np.diff(playtime)
 
 	diffTimePlaytime = diffTimestamps - diffPlaytime
-	stallings = [0]
+	stallings = []
 	for i in diffTimePlaytime:
 		if (i > 0.5):
 			stallings.append(i)
 
 	numOfStallings = len(stallings)
-	#print "len(stallings)", len(stallings)
-	avgStalling = sum(stallings)/len(stallings)
-	maxStalling = max(stallings)
-	minStalling = min(stallings)
-	q1 = np.percentile(stallings, quant1)
-	q2 = np.percentile(stallings, quant2)
-	q3 = np.percentile(stallings, quant3)
-	q4 = np.percentile(stallings, quant4)
-	totalStalling = sum(stallings)
+	print "len(stallings)", len(stallings)
+	if (numOfStallings < 1):
+		avgStalling = 0
+		maxStalling = 0
+		minStalling = 0
+		q1 = 0
+		q2 = 0
+		q3 = 0
+		q4 = 0
+		totalStalling = 0
+	else:
+		avgStalling = sum(stallings)/len(stallings)
+		maxStalling = max(stallings)
+		minStalling = min(stallings)
+		q1 = np.percentile(stallings, quant1)
+		q2 = np.percentile(stallings, quant2)
+		q3 = np.percentile(stallings, quant3)
+		q4 = np.percentile(stallings, quant4)
+		totalStalling = sum(stallings)
 	print "totalStalling: ", totalStalling
 	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4) + "," + str(totalStalling)
