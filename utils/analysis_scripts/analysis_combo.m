@@ -2,31 +2,37 @@
 %% Configuration
 
 filename = 'test.json';
+%filename = 'test2.json';
+outdir = './videomon_MATLAB_test';
+campaign_tag = 'campaign1';
+
 font_size = 14;
-
-ax1_position = [0 0 1 1];
-ax2_position = [.45 .1 .5 .8];
-
-textbox_x1 = .025;
-textbox_y1 = 0.7;
-textbox_x2 = .025;
-textbox_y2 = 0.35;
-
 bitrates_delimiter = ';';
+
+pos_bitrate = [0.3 0.6 0.3 0.3];
+pos_buffer = [0.3 0.1 0.3 0.3];
+pos_durstalls = [0.65 0.1 0.3 0.3];
+pos_numswitches = [0.65 0.6 0.3 0.3];
+pos_description = [0.05 0.1 0.1 0.8];
+
+textbox_x = 0;
+textbox_y = .5;
 
 %% Reading Input
 
 filetext = fileread(filename);
 jsonvalue = jsondecode(filetext);
 
-cnf_tag = get_field_str(jsonvalue,'cnf_tag');
-container_version = get_field_str(jsonvalue,'ContainerVersion');
-data_id = get_field_str(jsonvalue,'DataId');
-node_id = get_field_str(jsonvalue,'NodeId');
+%cnf_tag = get_field_str(jsonvalue,'cnf_tag');
 timestamp = get_field_str(jsonvalue,'Time');
+container_version = get_field_str(jsonvalue,'ContainerVersion');
+%data_id = get_field_str(jsonvalue,'DataId');
 
+node_id = get_field_str(jsonvalue,'NodeId');
 mcc_mnc_nw = get_field_num(jsonvalue,'NWMCCMNC');
 mcc_mnc_sim = get_field_num(jsonvalue,'IMSIMCCMNC');
+
+cnf_astream_algorithm = get_field_str(jsonvalue,'cnf_astream_algorithm');
 cnf_astream_segment_limit = get_field_num(jsonvalue,'cnf_astream_segment_limit');
 cnf_yomo_playback_duration_s = get_field_num(jsonvalue,'cnf_yomo_playback_duration_s');
 
@@ -94,7 +100,13 @@ res_astream_numswitches_down = get_field_num(jsonvalue,'res_astream_numswitches_
 
 %% Plots
 
+% Figure window
+
 close all
+f = figure;
+set(gcf, 'Position', [0, 0, 1500, 1000])
+
+% Quantiles
 
 if isnan(cnf_q1) || isnan(cnf_q2) || isnan(cnf_q3) || isnan(cnf_q4)
     str_q1 = 'Q1';
@@ -108,21 +120,7 @@ else
     str_q4 = ['Q4: ',num2str(cnf_q4)];
 end
 
-descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
-
-%% Plots: Bitrate
-
-figure;
-
-descr = {['Time: ',timestamp],...%strcat('Time: ',timestamp);
-    ['Container Version: ',container_version],...
-    ['Node ID: ',node_id],...
-    ['MCCMNC (SIM): ',num2str(mcc_mnc_sim)],...
-    ['MCCMNC (NW): ',num2str(mcc_mnc_nw)],...
-    ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
-    ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)],...
-    '',...
-    'Available Bitrates: '};
+% Subplot: bitrate
 
 yomo_stacked = [res_yomo_bitrate_mean;
     res_yomo_bitrate_max;
@@ -140,10 +138,8 @@ astream_stacked = [res_astream_bitrate_mean;
     res_astream_bitrate_q3;
     res_astream_bitrate_q4];
 
-ax1 = axes('position',ax1_position,'Visible','off');
-ax2 = axes('Position',ax2_position);
-
-bar(ax2,[yomo_stacked,astream_stacked])
+subplot('Position',pos_bitrate)
+bar([yomo_stacked,astream_stacked])
 xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
 h = legend('YoMo','AStream');
 legend('show')
@@ -153,25 +149,7 @@ set(h,'FontSize',font_size)
 title_str = 'Bitrate (Kbit/s)';
 title(title_str);
 
-axes(ax1)
-t1 = text(textbox_x1,textbox_y1,descr);
-t1.FontSize = font_size;
-
-axes(ax1)
-t2 = text(textbox_x2,textbox_y2,descr_bitrates);
-t2.FontSize = font_size;
-
-%% Plots: Buffer
-
-figure;
-
-descr = {['Time: ',timestamp],...
-    ['Container Version: ',container_version],...
-    ['Node ID: ',node_id],...
-    ['MCCMNC (SIM): ',num2str(mcc_mnc_sim)],...
-    ['MCCMNC (NW): ',num2str(mcc_mnc_nw)],...
-    ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
-    ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)]};
+% Subplot: buffer
 
 yomo_stacked = [res_yomo_buffer_mean;
     res_yomo_buffer_max;
@@ -189,10 +167,8 @@ astream_stacked = [res_astream_buffer_mean;
     res_astream_buffer_q3;
     res_astream_buffer_q4];
 
-ax1 = axes('Position',ax1_position,'Visible','off');
-ax2 = axes('Position',ax2_position);
-
-bar(ax2,[yomo_stacked,astream_stacked])
+subplot('Position',pos_buffer)
+bar([yomo_stacked,astream_stacked])
 xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
 h = legend('YoMo','AStream');
 legend('show')
@@ -202,24 +178,7 @@ set(h,'FontSize',font_size)
 title_str = 'Buffer (s)';
 title(title_str);
 
-axes(ax1)
-t1 = text(textbox_x1,textbox_y1,descr);
-t1.FontSize = font_size;
-
-%% Plots: Duration of Stalls
-
-figure;
-
-descr = {['Time: ',timestamp],...%strcat('Time: ',timestamp);
-    ['Container Version: ',container_version],...
-    ['Node ID: ',node_id],...
-    ['MCCMNC (SIM): ',num2str(mcc_mnc_sim)],...
-    ['MCCMNC (NW): ',num2str(mcc_mnc_nw)],...
-    ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
-    ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)],...
-    '',...
-    ['Number of Stalls (YoMo): ',num2str(res_yomo_numstalls)],...
-    ['Number of Stalls (AStream): ',num2str(res_astream_numstalls)]};
+% Subplot: duration of stalls
 
 yomo_stacked = [res_yomo_durstalls_mean;
     res_yomo_durstalls_max;
@@ -237,10 +196,8 @@ astream_stacked = [res_astream_durstalls_mean;
     res_astream_durstalls_q3;
     res_astream_durstalls_q4];
 
-ax1 = axes('Position',ax1_position,'Visible','off');
-ax2 = axes('Position',ax2_position);
-
-bar(ax2,[yomo_stacked,astream_stacked])
+subplot('Position',pos_durstalls)
+bar([yomo_stacked,astream_stacked])
 xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
 h = legend('YoMo','AStream');
 legend('show')
@@ -250,22 +207,7 @@ set(h,'FontSize',font_size)
 title_str = 'Duration of Stalls (s)';
 title(title_str);
 
-axes(ax1)
-t1 = text(textbox_x1,textbox_y1,descr);
-t1.FontSize = font_size;
-
-%% Plots: Number of Switches
-figure;
-
-descr = {['Time: ',timestamp],...
-    ['Container Version: ',container_version],...
-    ['Node ID: ',node_id],...
-    ['MCCMNC (SIM): ',num2str(mcc_mnc_sim)],...
-    ['MCCMNC (NW): ',num2str(mcc_mnc_nw)],...
-    ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
-    ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)],...
-    '',...
-    'Available Bitrates: '};
+% Subplot: number of switches
 
 yomo_stacked = [res_yomo_numswitches_up;
     res_yomo_numswitches_down];
@@ -273,10 +215,8 @@ yomo_stacked = [res_yomo_numswitches_up;
 astream_stacked = [res_astream_numswitches_up;
     res_astream_numswitches_down];
 
-ax1 = axes('Position',ax1_position,'Visible','off');
-ax2 = axes('Position',ax2_position);
-
-bar(ax2,[yomo_stacked,astream_stacked])
+subplot('Position',pos_numswitches)
+bar([yomo_stacked,astream_stacked])
 xticklabels({'up','down'});
 h = legend('YoMo','AStream');
 legend('show')
@@ -286,15 +226,40 @@ set(h,'FontSize',font_size)
 title_str = 'Number of Switches';
 title(title_str);
 
-axes(ax1)
-t1 = text(textbox_x1,textbox_y1,descr);
-t1.FontSize = font_size;
+% Subplot: description
 
-axes(ax1)
-t2 = text(textbox_x2,textbox_y2,descr_bitrates);
-t2.FontSize = font_size;
+descr = {['Time: ',timestamp],...
+    ['Container Version: ',container_version],...
+    '',...
+    ['Node ID: ',node_id],...
+    ['MCCMNC (SIM): ',num2str(mcc_mnc_sim)],...
+    ['MCCMNC (NW): ',num2str(mcc_mnc_nw)],...
+    '',...
+    ['AStream Algorithm: ',num2str(cnf_astream_algorithm)],...
+    ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
+    ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)],...
+    '',...
+    ['Number of Stalls (AStream): ',num2str(res_astream_numstalls)],...
+    ['Number of Stalls (YoMo): ',num2str(res_yomo_numstalls)],...
+     '',...
+    'Available Bitrates (bit/s): ',descr_bitrates{2:end}
+    };
 
-%% Functions
+descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
+
+subplot('Position',pos_description)
+t = text(textbox_x,textbox_y,descr);
+t.FontSize = font_size;
+
+axis off
+
+%% Writing Output
+
+mkdir(outdir);
+outfile = strcat(campaign_tag,'_',timestamp,'.jpg');
+saveas(f,strcat(outdir,'/',outfile));
+
+%% Helper Functions
 
 function str_out = get_field_str(json_in,str_in)
 try
