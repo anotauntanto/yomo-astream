@@ -77,10 +77,10 @@ descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
 descr = {['Time: ',timestamp],...%strcat('Time: ',timestamp);
     ['Container Version: ',container_version],...
     ['Node ID: ',node_id],...
-    ['MCCMNC (SIM): ',mcc_mnc_sim],...
-    ['MCCMNC (NW): ',mcc_mnc_nw],...
-    ['AStream Segment Limit: ',cnf_astream_segment_limit],...
-    ['YoMo Playback Duration: ',cnf_yomo_playback_duration_s],...
+    ['MCCMNC (SIM): ',num2str(mcc_mnc_sim)],...
+    ['MCCMNC (NW): ',num2str(mcc_mnc_nw)],...
+    ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
+    ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)],...
     '',...
     'Available Bitrates: '};
 
@@ -142,12 +142,18 @@ end
 function num_out = get_field_num(json_in,str_in)
 try
     value_str = getfield(json_in,str_in);
-    if strcmp(value_str,'NA') || strcmp(value_str,'None') || isempty(value_str)
-        num_out=NaN;
-    else
-        num_out=str2num(value_str);
+    if ischar(value_str)
+        if strcmp(value_str,'NaN') || strcmp(value_str,'None') || isempty(value_str)
+            num_out = NaN;
+        else
+            num_out = str2num(value_str);
+        end
+        
+    elseif isnumeric(value_str)
+            num_out = value_str;
     end
 catch ME
+    %disp(ME)
     num_out = NaN;
 end
 end

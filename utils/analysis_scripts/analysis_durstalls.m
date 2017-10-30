@@ -9,10 +9,10 @@ ax2_position = [.45 .1 .5 .8];
 
 textbox_x1 = .025;
 textbox_y1 = 0.7;
-textbox_x2 = .025;
-textbox_y2 = 0.35;
+%textbox_x2 = .025;
+%textbox_y2 = 0.35;
 
-bitrates_delimiter = ';';
+%bitrates_delimiter = ';';
 
 %% Reading Input
 
@@ -37,21 +37,23 @@ cnf_q4 = get_field_num(jsonvalue,'cnf_q4');
 
 res_astream_available_bitrates = get_field_str(jsonvalue,'res_astream_available_bitrates');
 
-res_yomo_bitrate_mean = get_field_num(jsonvalue,'res_yomo_bitrate_mean');
-res_yomo_bitrate_max = get_field_num(jsonvalue,'res_yomo_bitrate_max');
-res_yomo_bitrate_min = get_field_num(jsonvalue,'res_yomo_bitrate_min');
-res_yomo_bitrate_q1 = get_field_num(jsonvalue,'res_yomo_bitrate_q1');
-res_yomo_bitrate_q2 = get_field_num(jsonvalue,'res_yomo_bitrate_q2');
-res_yomo_bitrate_q3 = get_field_num(jsonvalue,'res_yomo_bitrate_q3');
-res_yomo_bitrate_q4 = get_field_num(jsonvalue,'res_yomo_bitrate_q4');
+res_yomo_numstalls = get_field_num(jsonvalue,'res_yomo_numstalls');
+res_yomo_durstalls_mean = get_field_num(jsonvalue,'res_yomo_durstalls_mean');
+res_yomo_durstalls_max = get_field_num(jsonvalue,'res_yomo_durstalls_max');
+res_yomo_durstalls_min = get_field_num(jsonvalue,'res_yomo_durstalls_min');
+res_yomo_durstalls_q1 = get_field_num(jsonvalue,'res_yomo_durstalls_q1');
+res_yomo_durstalls_q2 = get_field_num(jsonvalue,'res_yomo_durstalls_q2');
+res_yomo_durstalls_q3 = get_field_num(jsonvalue,'res_yomo_durstalls_q3');
+res_yomo_durstalls_q4 = get_field_num(jsonvalue,'res_yomo_durstalls_q4');
 
-res_astream_bitrate_mean = get_field_num(jsonvalue,'res_astream_bitrate_mean');
-res_astream_bitrate_max = get_field_num(jsonvalue,'res_astream_bitrate_max');
-res_astream_bitrate_min = get_field_num(jsonvalue,'res_astream_bitrate_min');
-res_astream_bitrate_q1 = get_field_num(jsonvalue,'res_astream_bitrate_q1');
-res_astream_bitrate_q2 = get_field_num(jsonvalue,'res_astream_bitrate_q2');
-res_astream_bitrate_q3 = get_field_num(jsonvalue,'res_astream_bitrate_q3');
-res_astream_bitrate_q4 = get_field_num(jsonvalue,'res_astream_bitrate_q4');
+res_astream_numstalls = get_field_num(jsonvalue,'res_astream_numstalls');
+res_astream_durstalls_mean = get_field_num(jsonvalue,'res_astream_durstalls_mean');
+res_astream_durstalls_max = get_field_num(jsonvalue,'res_astream_durstalls_max');
+res_astream_durstalls_min = get_field_num(jsonvalue,'res_astream_durstalls_min');
+res_astream_durstalls_q1 = get_field_num(jsonvalue,'res_astream_durstalls_q1');
+res_astream_durstalls_q2 = get_field_num(jsonvalue,'res_astream_durstalls_q2');
+res_astream_durstalls_q3 = get_field_num(jsonvalue,'res_astream_durstalls_q3');
+res_astream_durstalls_q4 = get_field_num(jsonvalue,'res_astream_durstalls_q4');
 
 %% Plots
 
@@ -69,7 +71,7 @@ else
     str_q4 = ['Q4: ',num2str(cnf_q4)];
 end
 
-descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
+%descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
 
 descr = {['Time: ',timestamp],...%strcat('Time: ',timestamp);
     ['Container Version: ',container_version],...
@@ -79,23 +81,24 @@ descr = {['Time: ',timestamp],...%strcat('Time: ',timestamp);
     ['AStream Segment Limit: ',num2str(cnf_astream_segment_limit)],...
     ['YoMo Playback Duration: ',num2str(cnf_yomo_playback_duration_s)],...
     '',...
-    'Available Bitrates: '};
+    ['Number of Stalls (YoMo): ',num2str(res_yomo_numstalls)],...
+    ['Number of Stalls (AStream): ',num2str(res_astream_numstalls)]};
 
-yomo_stacked = [res_yomo_bitrate_mean;
-    res_yomo_bitrate_max;
-    res_yomo_bitrate_min;
-    res_yomo_bitrate_q1;
-    res_yomo_bitrate_q2;
-    res_yomo_bitrate_q3;
-    res_yomo_bitrate_q4];
+yomo_stacked = [res_yomo_durstalls_mean;
+    res_yomo_durstalls_max;
+    res_yomo_durstalls_min;
+    res_yomo_durstalls_q1;
+    res_yomo_durstalls_q2;
+    res_yomo_durstalls_q3;
+    res_yomo_durstalls_q4];
 
-astream_stacked = [res_astream_bitrate_mean;
-    res_astream_bitrate_max;
-    res_astream_bitrate_min;
-    res_astream_bitrate_q1;
-    res_astream_bitrate_q2;
-    res_astream_bitrate_q3;
-    res_astream_bitrate_q4];
+astream_stacked = [res_astream_durstalls_mean;
+    res_astream_durstalls_max;
+    res_astream_durstalls_min;
+    res_astream_durstalls_q1;
+    res_astream_durstalls_q2;
+    res_astream_durstalls_q3;
+    res_astream_durstalls_q4];
 
 fig = figure;
 ax1 = axes('Position',ax1_position,'Visible','off');
@@ -108,17 +111,16 @@ legend('show')
 set(gca,'FontSize',font_size)
 set(h,'FontSize',font_size)
 
-title_str = 'Bitrate (Kbit/s)';
+title_str = 'Duration of Stalls (s)';
 title(title_str);
 
 axes(ax1)
 t1 = text(textbox_x1,textbox_y1,descr);
 t1.FontSize = font_size;
 
-axes(ax1)
-t2 = text(textbox_x2,textbox_y2,descr_bitrates);
-t2.FontSize = font_size;
-
+% axes(ax1)
+% t2 = text(textbox_x2,textbox_y2,descr_bitrates);
+% t2.FontSize = font_size;
 %% Functions
 
 function str_out = get_field_str(json_in,str_in)
