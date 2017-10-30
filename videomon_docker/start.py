@@ -289,7 +289,11 @@ def run_exp(meta_info, expconfig):
             "cnf_video_id": cfg['cnf_video_id'],
             "cnf_tag": cfg['cnf_tag'],
             "ContainerVersion": CONTAINER_VERSION,
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
+            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"],
+            "cnf_q1": cfg['cnf_q1'],
+            "cnf_q2": cfg['cnf_q2'],
+            "cnf_q3": cfg['cnf_q3'],
+            "cnf_q4": cfg['cnf_q4'],
             })
 
         if 'ICCID' in meta_info:
