@@ -1,7 +1,9 @@
 
+function function_analysis_bitrate(filename)
+
 %% Configuration
 
-filename = 'test.json';
+%filename = 'test.json';
 font_size = 14;
 
 ax1_position = [0 0 1 1];
@@ -55,7 +57,8 @@ res_astream_bitrate_q4 = get_field_num(jsonvalue,'res_astream_bitrate_q4');
 
 %% Plots
 
-close all
+%close all
+figure;
 
 if isnan(cnf_q1) || isnan(cnf_q2) || isnan(cnf_q3) || isnan(cnf_q4)
     str_q1 = 'Q1';
@@ -97,7 +100,7 @@ astream_stacked = [res_astream_bitrate_mean;
     res_astream_bitrate_q3;
     res_astream_bitrate_q4];
 
-fig = figure;
+%fig = figure;
 ax1 = axes('Position',ax1_position,'Visible','off');
 ax2 = axes('Position',ax2_position);
 
@@ -118,7 +121,9 @@ axes(ax1)
 t2 = text(textbox_x2,textbox_y2,descr_bitrates);
 t2.FontSize = font_size;
 
-%% Functions
+end
+
+%% Helper Functions
 
 function str_out = get_field_str(json_in,str_in)
 try
