@@ -41,7 +41,7 @@ DEBUG = False
 CONTAINER_VERSION = 'vBETA' #v1.0
 CONFIGFILE = '/monroe/config'
 
-PLAYBACK= 'BASIC'
+PLAYBACK= 'SARA'
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
 # other processes are started
@@ -54,7 +54,7 @@ EXPCONFIG = {
   "dataid": "MONROE.EXP.VIDEO",
   "nodeid": "fake.nodeid",
   "meta_grace": 10,                              # Grace period to wait for interface metadata
-  "exp_grace": 600,                               # Grace period before killing experiment
+  "exp_grace": 10000,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
   "time_between_experiments": 0,
   "verbosity": 3,                                 # 0 = "Mute", 1=error, 2=information, 3=verbose
@@ -98,7 +98,8 @@ EXPCONFIG = {
   "cnf_astream_skip": False,
   "cnf_yomo_skip": False,
 
-  "cnf_astream_out_fields": "res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
+  "cnf_astream_out_fields": "res_astream_available_bitrates,\
+res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
 res_astream_bitrate_q1,res_astream_bitrate_q2,res_astream_bitrate_q3,res_astream_bitrate_q4,\
 res_astream_buffer_mean,res_astream_buffer_max,res_astream_buffer_min,\
 res_astream_buffer_q1,res_astream_buffer_q2,res_astream_buffer_q3,res_astream_buffer_q4,\
@@ -322,7 +323,6 @@ def run_exp(meta_info, expconfig):
         ifname=meta_info[expconfig["modeminterfacename"]]
 
         #CM: constructing filename prefixes for YoMo and AStream, and output directory
-
         prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
         prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
         prefix_astream=get_prefix(data=cfg, postfix="astream", tstamp=prefix_timestamp, interface=ifname)

@@ -339,6 +339,7 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
     os.rename(resultdir + '_runtime.log', resultdir + prefix + '_runtime.log')
 
     #TODO: prepare output 7xbitrate, 7xbuffer, 1xnumstall, 7xduration
+    print("DBG: AStream - preparing output fields for summary")
     out = getOutput(resultdir,prefix,q1,q2,q3,q4,video_segment_duration)
 
     #TODO: kill Tshark
@@ -353,14 +354,14 @@ def getOutput(resultdir,prefix,q1,q2,q3,q4,segment_duration):
 
 def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
     bitrates=[]
-    json_in = open(resultdir + prefix + '_segments.json')
+    json_in = open(resultdir + prefix + "_segments.json")
     clientlog=json.load(json_in)
     #playback_info = clientlog["playback_info"]
     #down_shifts = playback_info["down_shifts"]
     #up_shifts = playback_info["up_shifts"]
     segment_info = clientlog["segment_info"]
     for segment in segment_info:
-        if 'init' not in segment[0]:
+        if "init" not in segment[0]:
             bitrates.append(segment[1]/1000)
             #print segment[0], segment[1]
             #file_out_bitrates.write(str(segment[1]) + '\n')
@@ -373,7 +374,16 @@ def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
     bitrates_q3=numpy.percentile(bitrates, q3)
     bitrates_q4=numpy.percentile(bitrates, q4)
 
-    return str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
+    video_metadata = clientlog["video_metadata"]
+    available_bitrates = video_metadata["available_bitrates"]
+
+    bitrates_list=""
+    for available_bitrate in available_bitrates:
+        bitrate_current = str(available_bitrate["bandwidth"])
+        bitrates_list = bitrates_list + ";" + bitrate_current
+        print(bitrates_list)
+
+    return bitrates_list + "," + str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
 
 def calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration):
     try:
@@ -447,18 +457,18 @@ def calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration):
 def calculateStallings(resultdir,prefix,q1,q2,q3,q4):
     json_in = open(resultdir + prefix + "_segments.json")
     clientlog=json.load(json_in)
-    playback_info = clientlog['playback_info']
-    interruptions = playback_info['interruptions']
-    num_stalls = interruptions['count']
-    stalls_total_duration = interruptions['total_duration']
+    playback_info = clientlog["playback_info"]
+    interruptions = playback_info["interruptions"]
+    num_stalls = interruptions["count"]
+    stalls_total_duration = interruptions["total_duration"]
 
-    down_shifts = playback_info['down_shifts']
-    up_shifts = playback_info['up_shifts']
+    down_shifts = playback_info["down_shifts"]
+    up_shifts = playback_info["up_shifts"]
 
     durstalls = []
 
     if num_stalls > 0:
-        events = interruptions['events']
+        events = interruptions["events"]
         for event in events:
             if (event[0] is not None) and (event[1] is not None):
                 durstall_current = event[1] - event[0]
