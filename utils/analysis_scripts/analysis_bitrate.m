@@ -107,8 +107,9 @@ h = legend('YoMo','AStream');
 legend('show')
 set(gca,'FontSize',font_size)
 set(h,'FontSize',font_size)
-%title_str = strcat(timestamp,'|',container_version,'|',node_id,'|',num2str(mcc_mnc_nw),'|',num2str(mcc_mnc_sim),'|',cnf_astream_segment_limit,'|',cnf_yomo_playback_duration_s);
-%title(title_str);
+
+title_str = 'Bitrate (Kbit/s)';
+title(title_str);
 
 axes(ax1)
 t1 = text(textbox_x1,textbox_y1,descr);
