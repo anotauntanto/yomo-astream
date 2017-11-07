@@ -1,10 +1,40 @@
+function function_analysis_combo(indir,outdir,campaign_tag)
 
+% outdir = '/Users/cmidoglu/Downloads/videomon_MATLAB_results';
+% campaign_tag = 'campaign1';
+
+files = dir(indir);
+directoryNames = {files([files.isdir]).name};
+directoryNames = directoryNames(~ismember(directoryNames,{'.','..'}));
+
+for i = 1:length(directoryNames)
+    folder = directoryNames{i};
+    folderpath = strcat(indir,'/',folder);
+    files = dir(folderpath);
+    fileNames = {files.name};
+    for j=1:length(fileNames)
+        file=fileNames{j};
+        if strfind(file, '_summary.json')
+            filepath = strcat(folderpath,'/',file)
+            function_analysis_combo_helper(filepath,outdir,campaign_tag);
+        end
+        
+    end
+    
+end
+
+end
+%outfile=strcat(campaign,time,bitrate/buffer/durstalls)
+
+%% Helper Functions
+
+function function_analysis_combo_helper(filename,outdir,campaign_tag)
 %% Configuration
 
 %filename = 'test.json';
-filename = 'test2.json';
-outdir = '/Users/cmidoglu/Downloads/videomon_MATLAB_test';
-campaign_tag = 'campaign1';
+%filename = 'test2.json';
+%outdir = '/Users/cmidoglu/Downloads/videomon_MATLAB_test';
+%campaign_tag = 'campaign1';
 
 font_size = 14;
 bitrates_delimiter = ';';
@@ -196,16 +226,18 @@ astream_stacked = [res_astream_durstalls_mean;
     res_astream_durstalls_q3;
     res_astream_durstalls_q4];
 
-subplot('Position',pos_durstalls)
-bar([yomo_stacked,astream_stacked])
-xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
-h = legend('YoMo','AStream');
-legend('show')
-set(gca,'FontSize',font_size)
-set(h,'FontSize',font_size)
-
-title_str = 'Duration of Stalls (s)';
-title(title_str);
+if size(yomo_stacked,1)==size(astream_stacked,1)
+    subplot('Position',pos_durstalls)
+    bar([yomo_stacked,astream_stacked])
+    xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
+    h = legend('YoMo','AStream');
+    legend('show')
+    set(gca,'FontSize',font_size)
+    set(h,'FontSize',font_size)
+    
+    title_str = 'Duration of Stalls (s)';
+    title(title_str);
+end
 
 % Subplot: number of switches
 
@@ -228,6 +260,8 @@ title(title_str);
 
 % Subplot: description
 
+descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
+
 descr = {['Time: ',timestamp],...
     ['Container Version: ',container_version],...
     '',...
@@ -241,11 +275,9 @@ descr = {['Time: ',timestamp],...
     '',...
     ['Number of Stalls (AStream): ',num2str(res_astream_numstalls)],...
     ['Number of Stalls (YoMo): ',num2str(res_yomo_numstalls)],...
-     '',...
+    '',...
     'Available Bitrates (bit/s): ',descr_bitrates{2:end}
     };
-
-descr_bitrates = strsplit(res_astream_available_bitrates,bitrates_delimiter);
 
 subplot('Position',pos_description)
 t = text(textbox_x,textbox_y,descr);
@@ -259,7 +291,7 @@ mkdir(outdir);
 outfile = strcat(campaign_tag,'_',timestamp,'.jpg');
 saveas(f,strcat(outdir,'/',outfile));
 
-%% Helper Functions
+end
 
 function str_out = get_field_str(json_in,str_in)
 try
@@ -285,7 +317,7 @@ try
         end
         
     elseif isnumeric(value_str)
-            num_out = value_str;
+        num_out = value_str;
     end
 catch ME
     %disp(ME)
