@@ -11,15 +11,7 @@ function tSharkData = loadTsharkLogFile( path )
         if (length(data) < 5)
             break;
         end
-%         timestampSplit = data{1};
-%         timestamp = str2double(strcat(timestampSplit(1:10),timestampSplit(12:14)));
-%         if timestamp < video.StartTimeRequ
-%             tline = fgetl(fid);
-%             continue;
-%         elseif timestamp > video.EndTime
-%             break;
-%         end
-        
+       
         tSharkData(r,2) = data(2);
         tSharkData(r,3) = data(3);
         tSharkData(r,1) = extractBefore(data(1),".");

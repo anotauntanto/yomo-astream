@@ -5,7 +5,7 @@ function stallingDurations = getStallingDurations( path )
     diffPlaytimes = diff(data(:,2));
     endIndex = find(diffPlaytimes <= 0);
     if (isempty(endIndex))
-       endIndex = ength(diffTimestamps);
+       endIndex = length(diffTimestamps);
     end
     diffTimePlay = diffTimestamps(1:endIndex-1)-diffPlaytimes(1:endIndex-1);
 
