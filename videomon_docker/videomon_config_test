@@ -1,5 +1,9 @@
 {
 "enabled_interfaces": ["eth0"],
 "cnf_tag": "Test run on local machine",
-"cnf_yomo_skip": "True"
+"cnf_astream_skip": "True",
+"cnf_astream_segment_limit": 20,
+"cnf_astream_server_host": "128.39.37.161",
+"cnf_astream_server_port": "12345",
+"cnf_video_id": "7kAy3b9hvWM"
 }

@@ -38,7 +38,7 @@ import numpy
 import pandas
 
 # Globals for arg parser with the default values
-MPD = "http://128.39.37.161:8080/BigBuckBunny_4s.mpd"
+MPD = "http://128.39.37.161:12345/BigBuckBunny_4s.mpd"
 DOWNLOAD_CHUNK = 1024
 DOWNLOAD = False
 SEGMENT_LIMIT = 100
@@ -251,8 +251,10 @@ def run_astream(video_id,server_host,server_port,algorithm,segment_limit,downloa
 
     #subprocess.call("./run_tshark.sh")
 
-    mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'/stream.mpd'
+    mpd='http://'+server_host+':'+server_port+'/output-video-'+video_id+'/stream.mpd'
+    #mpd='http://'+server_host+':'+server_port+'/media/'+video_id+'/stream.mpd'
     #mpd='http://'+server_host+':'+server_port+'/'+video_id+'.mpd'
+    #mpd=MPD
     print mpd
 
     # create the log files
@@ -353,37 +355,45 @@ def getOutput(resultdir,prefix,q1,q2,q3,q4,segment_duration):
 	return out
 
 def calculateBitrate(resultdir,prefix,q1,q2,q3,q4):
-    bitrates=[]
-    json_in = open(resultdir + prefix + "_segments.json")
-    clientlog=json.load(json_in)
-    #playback_info = clientlog["playback_info"]
-    #down_shifts = playback_info["down_shifts"]
-    #up_shifts = playback_info["up_shifts"]
-    segment_info = clientlog["segment_info"]
-    for segment in segment_info:
-        if "init" not in segment[0]:
-            bitrates.append(segment[1]/1000)
-            #print segment[0], segment[1]
-            #file_out_bitrates.write(str(segment[1]) + '\n')
 
-    bitrates_avg=numpy.mean(bitrates)
-    bitrates_max=max(bitrates)
-    bitrates_min=min(bitrates)
-    bitrates_q1=numpy.percentile(bitrates, q1)
-    bitrates_q2=numpy.percentile(bitrates, q2)
-    bitrates_q3=numpy.percentile(bitrates, q3)
-    bitrates_q4=numpy.percentile(bitrates, q4)
+    try:
 
-    video_metadata = clientlog["video_metadata"]
-    available_bitrates = video_metadata["available_bitrates"]
+        bitrates=[]
+        json_in = open(resultdir + prefix + "_segments.json")
+        clientlog=json.load(json_in)
+        #playback_info = clientlog["playback_info"]
+        #down_shifts = playback_info["down_shifts"]
+        #up_shifts = playback_info["up_shifts"]
+        segment_info = clientlog["segment_info"]
+        for segment in segment_info:
+            if "init" not in segment[0]:
+                bitrates.append(segment[1]/1000)
+                #print segment[0], segment[1]
+                #file_out_bitrates.write(str(segment[1]) + '\n')
 
-    bitrates_list=""
-    for available_bitrate in available_bitrates:
-        bitrate_current = str(available_bitrate["bandwidth"])
-        bitrates_list = bitrates_list + ";" + bitrate_current
-        print(bitrates_list)
+        bitrates_avg=numpy.mean(bitrates)
+        bitrates_max=max(bitrates)
+        bitrates_min=min(bitrates)
+        bitrates_q1=numpy.percentile(bitrates, q1)
+        bitrates_q2=numpy.percentile(bitrates, q2)
+        bitrates_q3=numpy.percentile(bitrates, q3)
+        bitrates_q4=numpy.percentile(bitrates, q4)
 
-    return bitrates_list + "," + str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
+        video_metadata = clientlog["video_metadata"]
+        available_bitrates = video_metadata["available_bitrates"]
+
+        bitrates_list=""
+        for available_bitrate in available_bitrates:
+            bitrate_current = str(available_bitrate["bandwidth"])
+            bitrates_list = bitrates_list + ";" + bitrate_current
+            print(bitrates_list)
+
+        return bitrates_list + "," + str(bitrates_avg) + "," + str(bitrates_max) + "," + str(bitrates_min) + "," + str(bitrates_q1) + "," + str(bitrates_q2) + "," + str(bitrates_q3) + "," + str(bitrates_q4)
+
+    except Exception as e:
+        print ("DBG: AStream calculateBitrate exception")
+        print (e)
+        return "NA,NA,NA,NA,NA,NA,NA,NA"
 
 def calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration):
     try:
@@ -455,36 +465,44 @@ def calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration):
         return "NA,NA,NA,NA,NA,NA,NA"
 
 def calculateStallings(resultdir,prefix,q1,q2,q3,q4):
-    json_in = open(resultdir + prefix + "_segments.json")
-    clientlog=json.load(json_in)
-    playback_info = clientlog["playback_info"]
-    interruptions = playback_info["interruptions"]
-    num_stalls = interruptions["count"]
-    stalls_total_duration = interruptions["total_duration"]
 
-    down_shifts = playback_info["down_shifts"]
-    up_shifts = playback_info["up_shifts"]
+    try:
 
-    durstalls = []
+        json_in = open(resultdir + prefix + "_segments.json")
+        clientlog=json.load(json_in)
+        playback_info = clientlog["playback_info"]
+        interruptions = playback_info["interruptions"]
+        num_stalls = interruptions["count"]
+        stalls_total_duration = interruptions["total_duration"]
 
-    if num_stalls > 0:
-        events = interruptions["events"]
-        for event in events:
-            if (event[0] is not None) and (event[1] is not None):
-                durstall_current = event[1] - event[0]
-                durstalls.append(durstall_current)
-    else:
-        durstalls.append(0)
+        down_shifts = playback_info["down_shifts"]
+        up_shifts = playback_info["up_shifts"]
 
-    durstalls_avg=numpy.mean(durstalls)
-    durstalls_max=max(durstalls)
-    durstalls_min=min(durstalls)
-    durstalls_q1=numpy.percentile(durstalls, q1)
-    durstalls_q2=numpy.percentile(durstalls, q2)
-    durstalls_q3=numpy.percentile(durstalls, q3)
-    durstalls_q4=numpy.percentile(durstalls, q4)
+        durstalls = []
 
-    return str(num_stalls) + "," + str(durstalls_avg) + "," + str(durstalls_max) + "," + str(durstalls_min) + "," + str(durstalls_q1) + "," + str(durstalls_q2) + "," + str(durstalls_q3) + "," + str(durstalls_q4) + "," + str(stalls_total_duration) + "," + str(up_shifts) + "," + str(down_shifts)
+        if num_stalls > 0:
+            events = interruptions["events"]
+            for event in events:
+                if (event[0] is not None) and (event[1] is not None):
+                    durstall_current = event[1] - event[0]
+                    durstalls.append(durstall_current)
+        else:
+            durstalls.append(0)
+
+        durstalls_avg=numpy.mean(durstalls)
+        durstalls_max=max(durstalls)
+        durstalls_min=min(durstalls)
+        durstalls_q1=numpy.percentile(durstalls, q1)
+        durstalls_q2=numpy.percentile(durstalls, q2)
+        durstalls_q3=numpy.percentile(durstalls, q3)
+        durstalls_q4=numpy.percentile(durstalls, q4)
+
+        return str(num_stalls) + "," + str(durstalls_avg) + "," + str(durstalls_max) + "," + str(durstalls_min) + "," + str(durstalls_q1) + "," + str(durstalls_q2) + "," + str(durstalls_q3) + "," + str(durstalls_q4) + "," + str(stalls_total_duration) + "," + str(up_shifts) + "," + str(down_shifts)
+
+    except Exception as e:
+        print ("DBG: AStream calculateStallings exception")
+        print (e)
+        return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
 
 def configure_log_file(resultdir, playback_type="", log_file=config_dash.LOG_FILENAME):
     """ Module to configure the log file and the log parameters.
