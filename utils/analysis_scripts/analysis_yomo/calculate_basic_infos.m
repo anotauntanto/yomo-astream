@@ -6,9 +6,9 @@ clear all;
 
 ytIds = {'D8YQn7o_AyA','6v2L2UGZJAM','Y-rmzh0PI3c','N2sCbtodGMI'};
 
-dataLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/*yomo_buffer.txt');
-eventLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/*yomo_events.txt');
-tsharkLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/*yomo_tshark_.txt');
+dataLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/*sara*yomo_buffer.txt');
+eventLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/*sara*yomo_events.txt');
+tsharkLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/*sara*yomo_tshark_.txt');
 
 % dataLogsPathsID1 = rdir(strcat('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/YT_', ytIds{1} ,'_*buffer.txt'));
 % eventLogsPathsID1 = rdir(strcat('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/YT_', ytIds{1} ,'_*events.txt'));
@@ -20,8 +20,6 @@ tsharkLogsPathsAll = rdir('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data
 % eventLogsPathsID4 = rdir(strcat('/home/anika/Dokumente/Projekte/yomo/yomo-astream/data/YT_', ytIds{4} ,'_*events.txt'));
 
 subindex = @(A,r,c) A(r,c);      %# An anonymous function to index a matrix
-
-
 
 %% get files local
 % 
@@ -72,7 +70,7 @@ stallingCount = arrayfun(@(x) length(getStallingDurations(x.name)), dataLogsPath
 
 [upSwitches, downSwitches, qualities] = arrayfun(@(x) getQualitySwitches(x.name), eventLogsPathsAll,'un',0);
 
-qualSwitchesMeanAll = arrayfun(@length, qualities);
+qualSwitchesMeanAll = arrayfun(@length, qualities)-1;
 
 
 %% bandwidth
@@ -83,7 +81,8 @@ bandwidth = arrayfun(@(x) getBandwidth(x.name), tsharkLogsPathsAll,'un',0);
 
 figure(5);
 hold all;
-plot(bandwidth{1,1}(1,:)*8/1000/1000);
+% arrayfun(@(x) plot(x{1}(:,1)-x{1}(1,1)+x{1}(1,2),x{1}(:,3)), bandwidth,'un',0);
+plot(cumsum(bandwidth{4,1}(1,:))*8/1000/1000);
 ylabel('tcp length [Mbps]');
 xlabel('time since start of tshark [s]');
 
