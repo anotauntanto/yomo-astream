@@ -22,7 +22,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4):
+def run_yomo(ytid, duration, prefix, resolution, bitrates,interf,resultDir,quant1,quant2,quant3,quant4):
 
 	try:
 		# Write output without buffering
@@ -34,7 +34,9 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		call(callTshark, shell=True)
 
 		# Start display
-		display = Display(visible=0, size=(1920, 1080)) #display size has to be cutomized 1920, 1080
+		resolutionSplit = np.array(resolution.split(','))
+		resolutionSplit = resolutionSplit.astype(np.int)
+		display = Display(visible=0, size=(resolutionSplit[0], resolutionSplit[1])) 
 		print time.time(), ' start display'
 		display.start()
 		time.sleep(10)
