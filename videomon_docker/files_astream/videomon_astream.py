@@ -401,7 +401,9 @@ def calculateBuffer(resultdir,prefix,q1,q2,q3,q4,segment_duration):
         csvfile = pandas.read_csv(resultdir + prefix + "_buffer.csv")
         epoch_time = csvfile.EpochTime
         current_playback_time = csvfile.CurrentPlaybackTime
-        current_buffer_size = csvfile.CurrentBufferSize
+        current_buffer_size_raw = csvfile.CurrentBufferSize
+        current_buffer_size = [0 if i < 0 else i for i in current_buffer_size_raw] #convert negative values to 0
+
         current_playback_state = csvfile.CurrentPlaybackState
         action = csvfile.Action
 

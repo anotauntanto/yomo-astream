@@ -1,6 +1,6 @@
 function function_analysis_combo(indir,outdir,campaign_tag)
 
-% outdir = '/Users/cmidoglu/Downloads/videomon_MATLAB_results';
+% outdir = '/Users/cmidoglu/Downloads/videomon_MATLAB_results_campaign4';
 % campaign_tag = 'campaign1';
 
 files = dir(indir);
@@ -16,7 +16,7 @@ for i = 1:length(directoryNames)
         file=fileNames{j};
         if strfind(file, '_summary.json')
             filepath = strcat(folderpath,'/',file)
-            function_analysis_combo_helper(filepath,outdir,campaign_tag);
+            function_analysis_combo_helper(folder,filepath,outdir,campaign_tag);
         end
         
     end
@@ -28,7 +28,7 @@ end
 
 %% Helper Functions
 
-function function_analysis_combo_helper(filename,outdir,campaign_tag)
+function function_analysis_combo_helper(foldername,filename,outdir,campaign_tag)
 %% Configuration
 
 %filename = 'test.json';
@@ -168,16 +168,22 @@ astream_stacked = [res_astream_bitrate_mean;
     res_astream_bitrate_q3;
     res_astream_bitrate_q4];
 
-subplot('Position',pos_bitrate)
-bar([yomo_stacked,astream_stacked])
-xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
-h = legend('YoMo','AStream');
-legend('show')
-set(gca,'FontSize',font_size)
-set(h,'FontSize',font_size)
-
-title_str = 'Bitrate (Kbit/s)';
-title(title_str);
+if size(yomo_stacked,1)==size(astream_stacked,1)
+    subplot('Position',pos_bitrate)
+    %bar([yomo_stacked,astream_stacked])
+    bar([astream_stacked,yomo_stacked])
+    
+    xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
+    %h = legend('YoMo','AStream');
+    h = legend('AStream','YoMo');
+    
+    legend('show')
+    set(gca,'FontSize',font_size)
+    %set(h,'FontSize',font_size)
+    
+    title_str = 'Bitrate (Kbit/s)';
+    title(title_str);
+end
 
 % Subplot: buffer
 
@@ -197,16 +203,22 @@ astream_stacked = [res_astream_buffer_mean;
     res_astream_buffer_q3;
     res_astream_buffer_q4];
 
-subplot('Position',pos_buffer)
-bar([yomo_stacked,astream_stacked])
-xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
-h = legend('YoMo','AStream');
-legend('show')
-set(gca,'FontSize',font_size)
-set(h,'FontSize',font_size)
-
-title_str = 'Buffer (s)';
-title(title_str);
+if size(yomo_stacked,1)==size(astream_stacked,1)
+    subplot('Position',pos_buffer)
+    %bar([yomo_stacked,astream_stacked])
+    bar([astream_stacked,yomo_stacked])
+    
+    xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
+    %h = legend('YoMo','AStream');
+    h = legend('AStream','YoMo');
+    
+    legend('show')
+    set(gca,'FontSize',font_size)
+    set(h,'FontSize',font_size)
+    
+    title_str = 'Buffer (s)';
+    title(title_str);
+end
 
 % Subplot: duration of stalls
 
@@ -228,9 +240,13 @@ astream_stacked = [res_astream_durstalls_mean;
 
 if size(yomo_stacked,1)==size(astream_stacked,1)
     subplot('Position',pos_durstalls)
-    bar([yomo_stacked,astream_stacked])
+    %bar([yomo_stacked,astream_stacked])
+    bar([astream_stacked,yomo_stacked])
+    
     xticklabels({'mean','max','min',str_q1,str_q2,str_q3,str_q4});
-    h = legend('YoMo','AStream');
+    %h = legend('YoMo','AStream');
+    h = legend('AStream','YoMo');
+    
     legend('show')
     set(gca,'FontSize',font_size)
     set(h,'FontSize',font_size)
@@ -242,21 +258,27 @@ end
 % Subplot: number of switches
 
 yomo_stacked = [res_yomo_numswitches_up;
-    res_yomo_numswitches_down];
+    res_yomo_numswitches_down]
 
 astream_stacked = [res_astream_numswitches_up;
-    res_astream_numswitches_down];
+    res_astream_numswitches_down]
 
-subplot('Position',pos_numswitches)
-bar([yomo_stacked,astream_stacked])
-xticklabels({'up','down'});
-h = legend('YoMo','AStream');
-legend('show')
-set(gca,'FontSize',font_size)
-set(h,'FontSize',font_size)
-
-title_str = 'Number of Switches';
-title(title_str);
+if size(yomo_stacked,1)==size(astream_stacked,1)
+    subplot('Position',pos_numswitches)
+    %bar([yomo_stacked,astream_stacked])
+    bar([astream_stacked,yomo_stacked])
+    
+    xticklabels({'up','down'});
+    %h = legend('YoMo','AStream');
+    h = legend('AStream','YoMo');
+    
+    legend('show')
+    set(gca,'FontSize',font_size)
+    set(h,'FontSize',font_size)
+    
+    title_str = 'Number of Switches';
+    title(title_str);
+end
 
 % Subplot: description
 
@@ -288,7 +310,7 @@ axis off
 %% Writing Output
 
 mkdir(outdir);
-outfile = strcat(campaign_tag,'_',timestamp,'.jpg');
+outfile = strcat(campaign_tag,'_',foldername,'_',timestamp,'.jpg');
 saveas(f,strcat(outdir,'/',outfile));
 
 end
@@ -310,7 +332,7 @@ function num_out = get_field_num(json_in,str_in)
 try
     value_str = getfield(json_in,str_in);
     if ischar(value_str)
-        if strcmp(value_str,'NaN') || strcmp(value_str,'None') || isempty(value_str)
+        if strcmp(value_str,'NA') || strcmp(value_str,'None') || isempty(value_str) || strcmp(value_str,'NaN')
             num_out = NaN;
         else
             num_out = str2num(value_str);
@@ -320,7 +342,7 @@ try
         num_out = value_str;
     end
 catch ME
-    %disp(ME)
+    disp(ME)
     num_out = NaN;
 end
 end
