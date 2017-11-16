@@ -118,7 +118,7 @@ def run_yomo(ytid, duration, prefix, resolution, bitrates,interf,resultDir,quant
 
 	return ""
 
-
+  
 # Calculate average, max, min, 25-50-75-90 quantiles of the following: bitrate [KB], buffer [s], number of stalls, duration of stalls, total stall duration, quality switches (up/down)
 def getOutput(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 	out = calculateBitrate(resultDir,prefix, bitrates.split(","),quant1,quant2,quant3,quant4) + "," + calculateBuffer(resultDir,prefix,quant1,quant2,quant3,quant4) + "," + calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4)
