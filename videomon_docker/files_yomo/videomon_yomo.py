@@ -22,77 +22,72 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, resolution, bitrates,interf,resultDir,quant1,quant2,quant3,quant4):
+def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4):
 
 	try:
-		# Write output without buffering
+		# write output without buffering
 		sys.stdout.flush()
 		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-		## Start tShark
+		# start tshark
 		callTshark = "tshark -n -i " + interf + " -E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark_.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
 		call(callTshark, shell=True)
 
-		# Start display
-		resolutionSplit = np.array(resolution.split(','))
-		resolutionSplit = resolutionSplit.astype(np.int)
-		display = Display(visible=0, size=(resolutionSplit[0], resolutionSplit[1])) 
+		# start display	
+		display = Display(visible=0, size=(4000,2400)) #old: 1920, 1080
 		print time.time(), ' start display'
 		display.start()
 		time.sleep(10)
 
-		bufferFactor = 2
+		# get url
 		url = 'https://www.youtube.com/watch?v=' + ytid
 
+		# define firefox settings
 		caps = DesiredCapabilities().FIREFOX
-		caps["marionette"] = True
 		#caps["pageLoadStrategy"] = "normal"  #  complete
-		#caps["pageLoadStrategy"] = "eager"  #  interactive
 		caps["pageLoadStrategy"] = "none"
-		#caps['loggingPrefs'] = { 'browser':'ALL' }
 
-		# Start video
+		# start firefox
 		print time.time(), ' start firefox'
 		browser = webdriver.Firefox(capabilities=caps)
+
+		# set window size	
+		browser.set_window_position(0,0)
+		browser.set_window_size(3840, 2260)
 		time.sleep(10)
 
-		jsFile = open('/opt/monroe/pluginAsJS.js', 'r')
+		# read in js
+		print "-- using WIDE mode"
+		jsFile = open('/opt/monroe/getVideoInfos.js', 'r')
 		js = jsFile.read()
 		jsFile.close
 
+		# open webpage
 		print time.time(), ' start video ', ytid
 		browser.get(url) 
 
-		# debug
-		#browser.get_screenshot_as_file(resultDir + 'screenshot0.png')
-		#browser.execute_script(js)
-		#browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
-		#browser.get_screenshot_as_file(resultDir + 'screenshot2.png')
-		#time.sleep(duration/2)
-		#browser.get_screenshot_as_file(resultDir + 'screenshot3.png')
-		#time.sleep(duration/2)
-		
+		# inject js
 		browser.execute_script(js)
 		time.sleep(duration)
-		#browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
+		browser.get_screenshot_as_file(resultDir + 'screenshot.png')
 		print "video playback ended"
 
+		# get infos from js and write to file
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
-
 		with open(resultDir + prefix + '_buffer.txt', 'w') as f:
-			f.write(out)
-
+			f.write(out.encode("UTF-8"))
 		with open(resultDir + prefix + '_events.txt', 'w') as f:
 			f.write(outE.encode("UTF-8"))
 
+		# close browser and stop display
 		browser.close()
 		print time.time(), ' finished firefox'
-
 		display.stop()
 		print time.time(), 'display stopped'
 
 	except Exception as e:
+		# handle exception
 		print time.time(), ' exception thrown'
 		print e
 		ts = time.time()

@@ -21,6 +21,19 @@ RUN pip install numpy
 RUN pip install psutil
 RUN pip install pandas
 
+# FireFox Inc
+ENV FF_VER 56.0
+# DumbInit
+ENV DI_VER 1.2.0
+# Gecko Driver
+ENV GD_VER 0.19.1
+#APT OPTS
+ENV APT_OPTS -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends --no-install-suggests --allow-unauthenticated
+RUN curl -L -o firefox.tbz2 "https://download.mozilla.org/?product=firefox-${FF_VER}&os=linux64&lang=en-US" \
+    && tar -C /opt -jxf firefox.tbz2 \
+    && ln -fs /opt/firefox/firefox /usr/bin/firefox
+
+
 COPY start.py /opt/monroe/
 COPY files_yomo /opt/monroe/
 COPY files_astream /opt/monroe/
