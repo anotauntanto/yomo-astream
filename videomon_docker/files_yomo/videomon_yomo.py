@@ -44,8 +44,8 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 
 		# define firefox settings
 		caps = DesiredCapabilities().FIREFOX
-		#caps["pageLoadStrategy"] = "normal"  #  complete
-		caps["pageLoadStrategy"] = "none"
+		caps["pageLoadStrategy"] = "normal"  #  complete
+		#caps["pageLoadStrategy"] = "none"
 
 		# start firefox
 		print time.time(), ' start firefox'
@@ -65,14 +65,22 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		# open webpage
 		print time.time(), ' start video ', ytid
 		browser.get(url) 
+		time.sleep(1)
 
 		# inject js
 		browser.execute_script(js)
 		time.sleep(duration)
 		browser.get_screenshot_as_file(resultDir + 'screenshot.png')
-		print "video playback ended"
+		print "-- video playback ended"
 
 		# get infos from js and write to file
+		print "-- write output to file"
+		print "-- -- errorLog"
+		errorLog = browser.execute_script('return document.getElementById("divLog").innerHTML;')
+		with open(resultDir + prefix + '_errorLog.txt', 'w') as f:
+			f.write(errorLog.encode("UTF-8"))
+
+		print "-- -- measurementData"
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
 		with open(resultDir + prefix + '_buffer.txt', 'w') as f:
