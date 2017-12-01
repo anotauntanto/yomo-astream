@@ -65,7 +65,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		# open webpage
 		print time.time(), ' start video ', ytid
 		browser.get(url) 
-		time.sleep(1)
+		# time.sleep(1)
 
 		# inject js
 		browser.execute_script(js)
@@ -191,9 +191,9 @@ def calculateBitrate(resultDir,prefix, bitrates,quant1,quant2,quant3,quant4):
 			qualDownSwitch += 1
 			
 	#print "len(usedBitrates): ", len(usedBitrates)
-	print "qualities", qualities
-	print "qualUpSwitch: ", qualUpSwitch
-	print "qualDownSwitch: ", qualDownSwitch
+	#print "qualities", qualities
+	#print "qualUpSwitch: ", qualUpSwitch
+	#print "qualDownSwitch: ", qualDownSwitch
 	avgBitrate = sum(usedBitrates)/len(usedBitrates)
 	maxBitrate = max(usedBitrates)
 	minBitrate = min(usedBitrates)
@@ -227,7 +227,7 @@ def calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4):
 			stallings.append(i)
 
 	numOfStallings = len(stallings)
-	print "len(stallings)", len(stallings)
+	#print "len(stallings)", len(stallings)
 	if (numOfStallings < 1):
 		avgStalling = 0
 		maxStalling = 0
@@ -246,5 +246,5 @@ def calculateStallings(resultDir,prefix,quant1,quant2,quant3,quant4):
 		q3 = np.percentile(stallings, quant3)
 		q4 = np.percentile(stallings, quant4)
 		totalStalling = sum(stallings)
-	print "totalStalling: ", totalStalling
+	#print "totalStalling: ", totalStalling
 	return str(numOfStallings) + "," + str(avgStalling) + "," + str(maxStalling) + "," + str(minStalling) + "," + str(q1) + "," + str(q2) + "," + str(q3) + "," + str(q4) + "," + str(totalStalling)
