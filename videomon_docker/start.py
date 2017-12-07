@@ -78,15 +78,16 @@ EXPCONFIG = {
 
   # These values are specific for this experiment
   "cnf_tag": "None",
-  "cnf_video_id": "7kAy3b9hvWM", #"D8YQn7o_AyA",   # (YouTube) ID of the video to be streamed #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",
+  "cnf_video_id": "D8YQn7o_AyA", #"7kAy3b9hvWM", # (YouTube) ID of the video to be streamed #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",
   "cnf_astream_algorithm": "Basic",               # Playback type in astream
   "cnf_astream_download": False,                   # Download option for AStream
   "cnf_astream_segment_limit": 2,                  # Segment limit option for AStream
-  "cnf_astream_server_host": "128.39.37.161",      # REQUIRED PARAMETER; Host/IP to connect to for astream
+  "cnf_astream_server_host": "128.39.36.18",      # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
   #"cnf_yomo_resolution": "1920,1080",
   "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the YouTube video playback
-  "cnf_yomo_bitrates_kbps": "180p:236.059,270p:461.195,360p:922.220,540p:1780.741,810p:3369.892,1080p:7823.352,1620p:15500.364", #"144p:114.792,240p:250.618,360p:606.343,480p:1166.528,720p:2213.150,1080p:4018.795,1440p:9489.022,2160p:21322.799" for D8YQn7o_AyA,
+  "cnf_yomo_bitrates_kbps": "144p:114.792,240p:250.618,360p:606.343,480p:1166.528,720p:2213.150,1080p:4018.795,1440p:9489.022,2160p:21322.799", #for D8YQn7o_AyA,
+  #"180p:236.059,270p:461.195,360p:922.220,540p:1780.741,810p:3369.892,1080p:7823.352,1620p:15500.364",
   #"144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
   "cnf_wait_btw_videos_s": 20,                     # Time to wait between different videos
