@@ -1,4 +1,3 @@
 # yomo-astream
-YoMoApp and AStream
+Container for running YoMoApp and AStream.
 
-UNDER CONSTRUCTION

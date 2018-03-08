@@ -1,0 +1,6 @@
+{
+"enabled_interfaces": ["eth0"],
+"cnf_tag": "Test run on local machine",
+"cnf_astream_segment_limit": 5,
+"cnf_astream_download": "True"
+}
