@@ -57,7 +57,7 @@ EXPCONFIG = {
   "modeminterfacename": "InternalInterface",
   "save_metadata_topic": "MONROE.META",
   "save_metadata_resultdir": None,                # set to a dir to enable saving of metadata
-  "add_modem_metadata_to_result": False,          # set to True to add one captured modem metadata to nettest result
+  "add_modem_metadata_to_result": True,          # set to True to add one captured modem metadata to videomon result
   "enabled_interfaces":["op0","op1","eth0"],
   "disabled_interfaces": ["lo",
                           "metadata",
@@ -83,7 +83,7 @@ EXPCONFIG = {
   "cnf_astream_server_host": "128.39.36.18",      # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
   #"cnf_yomo_resolution": "1920,1080",
-  "cnf_yomo_playback_duration_s": 10,              # Nominal duration for the YouTube video playback
+  "cnf_yomo_playback_duration_s": 0,              # Nominal duration for the YouTube video playback
   "cnf_yomo_bitrates_kbps": "144p:114.792,240p:250.618,360p:606.343,480p:1166.528,720p:2213.150,1080p:4018.795,1440p:9489.022,2160p:21322.799", #for D8YQn7o_AyA,
   #"180p:236.059,270p:461.195,360p:922.220,540p:1780.741,810p:3369.892,1080p:7823.352,1620p:15500.364",
   #"144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
@@ -285,13 +285,25 @@ def run_exp(meta_info, expconfig):
             })
 
         if 'ICCID' in meta_info:
-            cfg['cnf_add_to_result']['Iccid'] = meta_info['ICCID']
+            cfg['cnf_add_to_result']['ICCID'] = meta_info['ICCID']
         if 'Operator' in meta_info:
-            cfg['cnf_add_to_result']['Operator'] = meta_info['Operator']
+            cfg['cnf_add_to_result']['OPERATOR'] = meta_info['Operator']
         if 'IMSIMCCMNC' in meta_info:
             cfg['cnf_add_to_result']['IMSIMCCMNC'] = meta_info['IMSIMCCMNC']
         if 'NWMCCMNC' in meta_info:
             cfg['cnf_add_to_result']['NWMCCMNC'] = meta_info['NWMCCMNC']
+        if 'CID' in meta_info:
+            cfg['cnf_add_to_result']['CID'] = meta_info['CID']
+        if 'LAC' in meta_info:
+            cfg['cnf_add_to_result']['LAC'] = meta_info['LAC']
+        if 'DEVICEMODE' in meta_info:
+            cfg['cnf_add_to_result']['DEVICEMODE'] = meta_info['DEVICEMODE']
+        if 'DEVICESUBMODE' in meta_info:
+            cfg['cnf_add_to_result']['DEVICESUBMODE'] = meta_info['DEVICESUBMODE']
+        if 'LATITUDE' in meta_info:
+            cfg['cnf_add_to_result']['LATITUDE'] = meta_info['LATITUDE']
+        if 'LONGITUDE' in meta_info:
+            cfg['cnf_add_to_result']['LONGITUDE'] = meta_info['LONGITUDE']
 
         # Add metadata if requested
         if cfg['add_modem_metadata_to_result']:

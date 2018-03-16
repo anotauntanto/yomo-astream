@@ -1,4 +1,4 @@
-FROM monroe/base
+FROM monroe/base:web
 
 MAINTAINER VideoMon
 
