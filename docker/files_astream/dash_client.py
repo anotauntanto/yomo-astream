@@ -527,7 +527,7 @@ def main(mpd,playback,segment_limit,download,directory):
     args_updated['VIDEO_DIRECTORY']=directory
     globals().update(args_updated)
 
-    #TODOconfig_dash.LOG_FOLDER = "/monroe/results/videomon/astream/"
+    #TODO  config_dash.LOG_FOLDER = "/monroe/results/videomon/astream/"
 
     configure_log_file(playback_type=PLAYBACK.lower())
     config_dash.JSON_HANDLE['playback_type'] = PLAYBACK.lower()

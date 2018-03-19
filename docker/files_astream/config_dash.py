@@ -30,8 +30,9 @@ LOG_LEVEL = None
 LOG_FOLDER = '/monroe/results/videomon/astream/'
 # Set '-' to print to screen
 
-if not os.path.exists(LOG_FOLDER):
-    os.makedirs(LOG_FOLDER)
+#CM: commenting out
+# if not os.path.exists(LOG_FOLDER):
+#     os.makedirs(LOG_FOLDER)
 
 LOG_FILENAME = os.path.join(LOG_FOLDER, 'DASH_RUNTIME_LOG')
 # Logs related to the statistics for the video

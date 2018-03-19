@@ -41,6 +41,7 @@ def run_astream(mpd,server_host,server_port,video,algorithm,segment_limit,downlo
     # if cfg['verbosity'] > 2:
     print('\n-----------------------------')
     print('DBG: Output files from AStream core:')
+    print('-----------------------------')
     print(astream_segment_log)
     print(astream_buffer_log)
     print(astream_runtime_log)
