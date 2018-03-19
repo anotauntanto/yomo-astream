@@ -13,7 +13,8 @@ RUN echo "install pciutils" \
         && export DEBIAN_FRONTEND=noninteractive \
 		&& apt-get install -q -y pciutils
 
-RUN echo "install numpy and psutil"
+
+RUN echo "install numpy, psutil, pandas"
 RUN apt-get update -q
 RUN apt-get install -y libblas-dev liblapack-dev liblapacke-dev gfortran
 RUN apt-get install -y python-pip 
@@ -21,17 +22,12 @@ RUN pip install numpy
 RUN pip install psutil
 RUN pip install pandas
 
-# FireFox Inc
-ENV FF_VER 56.0
-# DumbInit
-ENV DI_VER 1.2.0
+
 # Gecko Driver
 ENV GD_VER 0.19.1
 #APT OPTS
-ENV APT_OPTS -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends --no-install-suggests --allow-unauthenticated
-RUN curl -L -o firefox.tbz2 "https://download.mozilla.org/?product=firefox-${FF_VER}&os=linux64&lang=en-US" \
-    && tar -C /opt -jxf firefox.tbz2 \
-    && ln -fs /opt/firefox/firefox /usr/bin/firefox
+RUN curl -L -o geckodriver.tgz "https://github.com/mozilla/geckodriver/releases/download/v${GD_VER}/geckodriver-v${GD_VER}-linux64.tar.gz" \
+    && tar -C /usr/bin -zxf geckodriver.tgz
 
 
 COPY videomon_start.py /opt/monroe/

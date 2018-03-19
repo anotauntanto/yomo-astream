@@ -30,8 +30,18 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 		# start tshark
-		callTshark = "tshark -n -i " + interf + " -E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark_.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
+		callTshark = "tshark -n -i " + interf + " -E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
+		print time.time(), ' start tshark'		
 		call(callTshark, shell=True)
+
+		# enable HTTP logging
+		enaHttpLog = "export MOZ_LOG=timestamp,nsHttp:3"
+		enaHttpLog2 = "export MOZ_LOG_FILE=" + resultDir + prefix + "_httpLog.txt"
+		print time.time(), ' enable HTTP logging'
+		os.environ["MOZ_LOG"] = "timestamp,nsHttp:3"
+		os.environ["MOZ_LOG_FILE"] = resultDir + prefix + "_httpLog.txt"
+		#call(enaHttpLog, shell=True)
+		#call(enaHttpLog2, shell=True)
 
 		# start display	
 		display = Display(visible=0, size=(4000,2400)) #old: 1920, 1080
@@ -57,7 +67,6 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		time.sleep(10)
 
 		# read in js
-		print "-- using WIDE mode"
 		jsFile = open('/opt/monroe/getVideoInfos.js', 'r')
 		js = jsFile.read()
 		jsFile.close
@@ -69,6 +78,10 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 
 		# inject js
 		browser.execute_script(js)
+
+		#calculate duration
+		if (duration <= 0):
+			duration = browser.execute_script('return document.getElementsByTagName("video")[0].duration;');	 	
 		time.sleep(duration)
 		browser.get_screenshot_as_file(resultDir + 'screenshot.png')
 		print "-- video playback ended"
