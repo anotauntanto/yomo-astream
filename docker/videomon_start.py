@@ -33,9 +33,10 @@ from videomon_astream import *
 # Configuration
 CONFIGFILE = '/monroe/config'
 DEBUG = False
-CONTAINER_VERSION = 'v2.0'
+CONTAINER_VERSION = 'v2.1'
 #CM: version information
 #v2.0   (CM) working container with new structure 03.2018
+#v2.1   (CM) metadata reading within container 03.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -424,15 +425,23 @@ def run_exp(meta_info, expconfig):
 
             #CM: compressing all outputs other than summary JSON
 
+            save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
+
             if 'cnf_compress_additional_results' in cfg and cfg['cnf_compress_additional_results']:
                 files_to_compress=resultdir_videomon+"*"
                 #with tarfile.open(os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), mode='w:gz') as tar:
                 #tar.add(cfg['resultdir'], recursive=False)
                 #tar.add(files_to_compress)
-                shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)), format='gztar', root_dir=resultdir_videomon,base_dir="./")
-                shutil.rmtree(resultdir_videomon)
-                #os.remove(cfg['resultdir'])
 
+                #print ('DBG1')
+                shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)), format='gztar', root_dir=resultdir_videomon,base_dir="./")
+                #print ('DBG2')
+                #print(os.listdir(resultdir_astream))
+                #print('DBG3')
+                #print(os.listdir(resultdir_videomon))
+                shutil.rmtree(resultdir_videomon)
+
+                #os.remove(cfg['resultdir'])
                 # foldername_zip=get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)
                 # basename_zip=os.path.join(resultdir,foldername_zip)
                 # #print(foldername_zip)
@@ -440,7 +449,6 @@ def run_exp(meta_info, expconfig):
                 # shutil.make_archive(base_name=basename_zip, format='gztar', root_dir=resultdir, base_dir=foldername_zip)#"./")
                 # shutil.rmtree(basename_zip)
 
-            save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
 
     except Exception as e:
         if cfg['verbosity'] > 0:
