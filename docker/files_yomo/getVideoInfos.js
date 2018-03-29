@@ -4,28 +4,14 @@ var init = function (){
 
 		player = document.getElementsByTagName("video")[0];
 
-		var divOutC = document.createElement("div");
-		divOutC.id = "outC";
-		body = document.getElementsByTagName("body")[0];
-		body.appendChild(divOutC);
-		var divOutE = document.createElement("div");
-		divOutE.id = "outE";
-		body.appendChild(divOutE);
-
-		var divLog = document.createElement("div");
-		divLog.id = "divLog";
-		document.getElementsByTagName("body")[0].appendChild(divLog);
-		//window.onerror = showError();
+		addOutDivs();
 
 		last_infos = "";
 		last_videoHeight = -1;
 		last_volume = -1;
 		last_duration = 0;
 		last_ytid = "";
-		last_title = "";
-
-		//setTimeout(function () {outE = outE + document.getElementsByClassName("ytp-size-button").length + "|" + document.getElementsByClassName("ytd-page-manager") + "|" + document.getElementsByClassName("ytd-page-manager")[0] + "|" + document.getElementsByClassName("ytd-page-manager")[0].getAttribute("theater") + "|" + document.getElementsByClassName("ytd-page-manager")[0].getAttribute("theater-requested_") + "\n"; outE = outE + document.getElementsByTagName("body")[0].innerHTML + "\n";}, 2000);
-	
+		last_title = "";	
 		
 		addEventListeners();
 		setWide();
@@ -40,6 +26,20 @@ function showError()
 {
     document.getElementById("divLog").innerHTML += "error";
    	return true
+}
+
+function addOutDivs(){
+	var divOutC = document.createElement("div");
+	divOutC.id = "outC";
+	body = document.getElementsByTagName("body")[0];
+	body.appendChild(divOutC);
+	var divOutE = document.createElement("div");
+	divOutE.id = "outE";
+	body.appendChild(divOutE);
+	var divLog = document.createElement("div");
+	divLog.id = "divLog";
+	document.getElementsByTagName("body")[0].appendChild(divLog);
+	//window.onerror = showError();
 }
 
 var setWide = function (){

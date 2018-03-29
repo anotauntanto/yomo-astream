@@ -393,7 +393,7 @@ def run_exp(meta_info, expconfig):
                     print('-----------------------------')
 
                 #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_resolution'],cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
+                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],'chrome')
 
                 if cfg['verbosity'] > 2:
                     print('')

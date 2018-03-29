@@ -10,6 +10,8 @@ import sys
 import random
 import psutil
 import numpy as np
+import selenium.webdriver.support.ui as ui
+import selenium.webdriver.chrome.service as service
 
 import monroe_exporter
 import json
@@ -18,30 +20,24 @@ from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.chrome.options import Options  
 
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4):
+def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4,browser):
 
 	try:
+
 		# write output without buffering
 		sys.stdout.flush()
 		sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 		# start tshark
 		callTshark = "tshark -n -i " + interf + " -E separator=, -T fields -e frame.time_epoch -e tcp.len -e frame.len -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e tcp.analysis.ack_rtt -e tcp.analysis.lost_segment -e tcp.analysis.out_of_order -e tcp.analysis.fast_retransmission -e tcp.analysis.duplicate_ack -e dns -Y 'tcp or dns'  >>" + resultDir + prefix + "_tshark.txt  2>" + resultDir + prefix + "_tshark_error.txt &"
-		print time.time(), ' start tshark'		
-		call(callTshark, shell=True)
+		print time.time(), ' start tshark'	
 
-		# enable HTTP logging
-		enaHttpLog = "export MOZ_LOG=timestamp,nsHttp:3"
-		enaHttpLog2 = "export MOZ_LOG_FILE=" + resultDir + prefix + "_httpLog.txt"
-		print time.time(), ' enable HTTP logging'
-		os.environ["MOZ_LOG"] = "timestamp,nsHttp:3"
-		os.environ["MOZ_LOG_FILE"] = resultDir + prefix + "_httpLog.txt"
-		#call(enaHttpLog, shell=True)
-		#call(enaHttpLog2, shell=True)
+		call(callTshark, shell=True)
 
 		# start display	
 		display = Display(visible=0, size=(4000,2400)) #old: 1920, 1080
@@ -52,14 +48,44 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		# get url
 		url = 'https://www.youtube.com/watch?v=' + ytid
 
-		# define firefox settings
-		caps = DesiredCapabilities().FIREFOX
-		caps["pageLoadStrategy"] = "normal"  #  complete
-		#caps["pageLoadStrategy"] = "none"
+		# select browser
+		if (browser == "chrome"):
+			
+			# chrome
+			print time.time(), ' selected browser: chrome'
+			#call('google-chrome --version', shell=True)
+			#call('google-chrome', shell=True)
 
-		# start firefox
-		print time.time(), ' start firefox'
-		browser = webdriver.Firefox(capabilities=caps)
+			# define chrome settings
+			chrome_options = webdriver.ChromeOptions()
+			chrome_options.add_argument('--no-sandbox')
+			chrome_options.add_argument('--disable-dev-shm-usage')
+			chrome_options.add_argument('-log-net-log=' + resultDir + prefix + '_httpLog_C.json')
+
+			# start chrome
+			print time.time(), ' start chrome'
+			browser = webdriver.Chrome('/usr/bin/chromedriver', chrome_options=chrome_options)
+
+		else:
+
+			# firefox
+			print time.time(), ' selected browser: firefox'
+
+			# define firefox settings
+			caps = DesiredCapabilities().FIREFOX
+			caps["pageLoadStrategy"] = "normal"  #  complete
+			#caps["pageLoadStrategy"] = "none"
+
+			# start firefox
+			print time.time(), ' start firefox'
+			browser = webdriver.Firefox(capabilities=caps)
+
+			# enable HTTP logging
+			enaHttpLog = "export MOZ_LOG=timestamp,nsHttp:3"
+			enaHttpLog2 = "export MOZ_LOG_FILE=" + resultDir + prefix + "_httpLog.txt"
+			#print time.time(), ' - enable HTTP logging'
+			os.environ["MOZ_LOG"] = "timestamp,nsHttp:3"
+			os.environ["MOZ_LOG_FILE"] = resultDir + prefix + "_httpLog_FF.txt"
 
 		# set window size	
 		browser.set_window_position(0,0)
@@ -70,6 +96,12 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		jsFile = open('/opt/monroe/getVideoInfos.js', 'r')
 		js = jsFile.read()
 		jsFile.close
+
+
+		# DEBUG
+		#browser.get('about:support')
+		#browser.get_screenshot_as_file(resultDir + 'screenshot1.png')
+
 
 		# open webpage
 		print time.time(), ' start video ', ytid
@@ -84,16 +116,15 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 			duration = browser.execute_script('return document.getElementsByTagName("video")[0].duration;');	 	
 		time.sleep(duration)
 		browser.get_screenshot_as_file(resultDir + 'screenshot.png')
-		print "-- video playback ended"
+		print time.time(), " video playback ended"
 
 		# get infos from js and write to file
-		print "-- write output to file"
-		print "-- -- errorLog"
+		print time.time(), " write output to file"
+		print time.time(), " -- errorLog"
 		errorLog = browser.execute_script('return document.getElementById("divLog").innerHTML;')
 		with open(resultDir + prefix + '_errorLog.txt', 'w') as f:
 			f.write(errorLog.encode("UTF-8"))
-
-		print "-- -- measurementData"
+		print time.time(), " -- measurementData"
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
 		with open(resultDir + prefix + '_buffer.txt', 'w') as f:

@@ -1,6 +1,7 @@
 {
 "enabled_interfaces": ["eth0"],
 "cnf_tag": "Test run on local machine",
-"cnf_astream_segment_limit": 5,
-"cnf_astream_download": "True"
+"cnf_astream_skip": true,
+"cnf_yomo_skip": false,
+"cnf_yomo_playback_duration_s": 10
 }
