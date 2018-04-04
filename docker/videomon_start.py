@@ -37,6 +37,7 @@ CONTAINER_VERSION = 'v2.1'
 #CM: version information
 #v2.0   (CM) working container with new structure 03.2018
 #v2.1   (CM) metadata reading within container 03.2018
+#v2.2   (AS) Chrome, Firefox, HTTP logging enabled 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
