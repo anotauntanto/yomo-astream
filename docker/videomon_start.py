@@ -38,6 +38,7 @@ CONTAINER_VERSION = 'v2.1'
 #v2.0   (CM) working container with new structure 03.2018
 #v2.1   (CM) metadata reading within container 03.2018
 #v2.2   (AS) Chrome, Firefox, HTTP logging enabled 04.2018
+#v2.3   (CM) summary JSON field names, folder creation conditional on module skipping
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -262,60 +263,68 @@ def run_exp(meta_info, expconfig):
             cfg['cnf_add_to_result'] = {}
 
         cfg['cnf_add_to_result'].update({
-            "Guid": cfg['guid'],
-            "DataId": cfg['dataid'],
-            "DataVersion": cfg['dataversion'],
-            "NodeId": cfg['nodeid'],
-            "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
-            "Interface": cfg['modeminterfacename'],
-            "cnf_astream_mpd": cfg['cnf_astream_mpd'],
-            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
-            "cnf_astream_server_port": cfg['cnf_astream_server_port'],
-            "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
-            "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
-            "cnf_astream_segment_duration": cfg['cnf_astream_segment_duration'],
-            "cnf_astream_download": cfg['cnf_astream_download'],
+            "summary_containerversion": CONTAINER_VERSION,
+            "summary_dataid": cfg['dataid'],
+            "summary_dataversion": cfg['dataversion'],
+            "summary_debug": DEBUG,
+            "summary_guid": cfg['guid'],
+            "summary_interface": cfg['modeminterfacename'],
+            "summary_nodeid": cfg['nodeid'],
+            "summary_time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
             "cnf_video_id": cfg['cnf_video_id'],
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"],
             "cnf_q1": cfg['cnf_q1'],
             "cnf_q2": cfg['cnf_q2'],
             "cnf_q3": cfg['cnf_q3'],
             "cnf_q4": cfg['cnf_q4'],
-            "cnf_tag": cfg['cnf_tag'],
-            "ContainerVersion": CONTAINER_VERSION,
-            "DEBUG": DEBUG
+            "cnf_tag": cfg['cnf_tag']
             })
 
+        if not cfg['cnf_astream_skip']:
+            cfg['cnf_add_to_result'].update({
+                "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
+                "cnf_astream_download": cfg['cnf_astream_download'],
+                "cnf_astream_mpd": cfg['cnf_astream_mpd'],
+                "cnf_astream_segment_duration": cfg['cnf_astream_segment_duration'],
+                "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
+                "cnf_astream_server_host": cfg['cnf_astream_server_host'],
+                "cnf_astream_server_port": cfg['cnf_astream_server_port']
+                })
+
+        if not cfg['cnf_yomo_skip']:
+            cfg['cnf_add_to_result'].update({
+                "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
+                })
+
         if 'ICCID' in meta_info:
-            cfg['cnf_add_to_result']['ICCID'] = meta_info['ICCID']
+            cfg['cnf_add_to_result']['summary_iccid'] = meta_info['ICCID']
         if 'Operator' in meta_info:
-            cfg['cnf_add_to_result']['OPERATOR'] = meta_info['Operator']
+            cfg['cnf_add_to_result']['summary_operator'] = meta_info['Operator']
         if 'IMSIMCCMNC' in meta_info:
-            cfg['cnf_add_to_result']['IMSIMCCMNC'] = meta_info['IMSIMCCMNC']
+            cfg['cnf_add_to_result']['summary_imsimccmnc'] = meta_info['IMSIMCCMNC']
         if 'NWMCCMNC' in meta_info:
-            cfg['cnf_add_to_result']['NWMCCMNC'] = meta_info['NWMCCMNC']
+            cfg['cnf_add_to_result']['summary_nwmccmnc'] = meta_info['NWMCCMNC']
         if 'CID' in meta_info:
-            cfg['cnf_add_to_result']['CID'] = meta_info['CID']
+            cfg['cnf_add_to_result']['summary_cid'] = meta_info['CID']
         if 'LAC' in meta_info:
-            cfg['cnf_add_to_result']['LAC'] = meta_info['LAC']
+            cfg['cnf_add_to_result']['summary_lac'] = meta_info['LAC']
         if 'DEVICEMODE' in meta_info:
-            cfg['cnf_add_to_result']['DEVICEMODE'] = meta_info['DEVICEMODE']
+            cfg['cnf_add_to_result']['summary_devicemode'] = meta_info['DEVICEMODE']
         if 'DEVICESUBMODE' in meta_info:
-            cfg['cnf_add_to_result']['DEVICESUBMODE'] = meta_info['DEVICESUBMODE']
+            cfg['cnf_add_to_result']['summary_devicesubmode'] = meta_info['DEVICESUBMODE']
         if 'LATITUDE' in meta_info:
-            cfg['cnf_add_to_result']['LATITUDE'] = meta_info['LATITUDE']
+            cfg['cnf_add_to_result']['summary_latitude'] = meta_info['LATITUDE']
         if 'LONGITUDE' in meta_info:
-            cfg['cnf_add_to_result']['LONGITUDE'] = meta_info['LONGITUDE']
+            cfg['cnf_add_to_result']['summary_longitude'] = meta_info['LONGITUDE']
+
+        ifname = meta_info[cfg['modeminterfacename']]
+        cfg['cnf_add_to_result']['summary_interface'] = ifname
 
         # Add metadata if requested
         if cfg['add_modem_metadata_to_result']:
-
             for k,v in meta_info.items():
                 cfg['cnf_add_to_result']['info_meta_modem_' + k] = v
 
         towrite_data = cfg['cnf_add_to_result']
-        ifname = meta_info[cfg['modeminterfacename']]
-        towrite_data['Interface']=ifname
 
         #CM: constructing filename prefixes for YoMo and AStream, and output directory
         prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
@@ -324,15 +333,17 @@ def run_exp(meta_info, expconfig):
 
         #resultdir=cfg['resultdir']
         resultdir_videomon=cfg['resultdir']+"videomon/"
-
         resultdir_astream=resultdir_videomon+'astream/'
         resultdir_astream_video = resultdir_astream + 'videos/'
-        if not os.path.exists(resultdir_astream_video):
-            os.makedirs(resultdir_astream_video)
-
         resultdir_yomo=resultdir_videomon+'yomo'
-        if not os.path.exists(resultdir_yomo):
-            os.makedirs(resultdir_yomo)
+
+        if not cfg['cnf_astream_skip']:
+            if not os.path.exists(resultdir_astream_video):
+                os.makedirs(resultdir_astream_video)
+
+        if not cfg['cnf_yomo_skip']:
+            if not os.path.exists(resultdir_yomo):
+                os.makedirs(resultdir_yomo)
 
         if cfg['verbosity'] > 2:
             print('')
