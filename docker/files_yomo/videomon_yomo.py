@@ -4,12 +4,11 @@ import time
 import shutil
 import os
 import csv
-import time
 import datetime
 import sys
 import random
-import psutil
-import numpy as np
+#import psutil
+#import numpy as np
 import selenium.webdriver.support.ui as ui
 import selenium.webdriver.chrome.service as service
 
@@ -25,7 +24,7 @@ from selenium.webdriver.chrome.options import Options
 from subprocess import call
 
 
-def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4,browser):
+def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,quant3,quant4,browser,quic):
 
 	try:
 
@@ -58,14 +57,18 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 			
 			# chrome
 			print time.time(), ' selected browser: chrome'
-			#call('google-chrome --version', shell=True)
-			#call('google-chrome', shell=True)
 
 			# define chrome settings
 			chrome_options = webdriver.ChromeOptions()
 			chrome_options.add_argument('--no-sandbox')
 			chrome_options.add_argument('--disable-dev-shm-usage')
 			chrome_options.add_argument('-log-net-log=' + resultDir + prefix + '_httpLog_C.json')
+			if (quic == False):
+				print time.time(), " -- quic disabled"
+				chrome_options.add_argument('--disable-quic')
+			else:
+				print time.time(), " -- quic enabled"
+				chrome_options.add_argument('--enable-quic')
 
 			# start chrome
 			print time.time(), ' start chrome'
@@ -82,8 +85,8 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 			#caps["pageLoadStrategy"] = "none"
 
 			# enable HTTP logging
-			enaHttpLog = "export MOZ_LOG=timestamp,nsHttp:3"
-			enaHttpLog2 = "export MOZ_LOG_FILE=" + resultDir + prefix + "_httpLog.txt"
+			#enaHttpLog = "export MOZ_LOG=timestamp,nsHttp:3"
+			#enaHttpLog2 = "export MOZ_LOG_FILE=" + resultDir + prefix + "_httpLog.txt"
 			print time.time(), ' - enable HTTP logging'
 			os.environ["MOZ_LOG"] = "timestamp,nsHttp:3"
 			os.environ["MOZ_LOG_FILE"] = resultDir + prefix + "_httpLog_FF.txt"
@@ -106,6 +109,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 
 		# open webpage
 		print time.time(), ' start video ', ytid
+		timeStartVideo = int(round(time.time() * 1000))
 		browser.get(url) 
 		# time.sleep(1)
 
@@ -129,6 +133,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
 		with open(resultDir + prefix + '_buffer.txt', 'w') as f:
+			f.write(str(timeStartVideo)+ '\n' )			
 			f.write(out.encode("UTF-8"))
 		with open(resultDir + prefix + '_events.txt', 'w') as f:
 			f.write(outE.encode("UTF-8"))
@@ -148,21 +153,21 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		print st
 		display.stop()
 
-	try:
+	#try:
 		# Calculate output
-		out = getOutput(resultDir,prefix,bitrates,quant1,quant2,quant3,quant4)
+		#out = getOutput(resultDir,prefix,bitrates,quant1,quant2,quant3,quant4)
 		#print out
-		return out
-
-	except Exception as e:
-		print time.time(), ' exception thrown'
-		print e
-		ts = time.time()
-		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
-		print st
+		#return out
+	#
+	#except Exception as e:
+		#print time.time(), ' exception thrown'
+		#print e
+		#ts = time.time()
+		#st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
+		#print st
 		## Kill Tshark
 		#sys.exit(0)
-		return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
+		#return "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA"
 
 	return ""
 
