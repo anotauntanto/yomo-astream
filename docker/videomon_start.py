@@ -27,7 +27,7 @@ import glob
 #sys.path.append('files_yomo')
 #sys.path.append('files_astream')
 from videomon_yomo import *
-from videomon_astream import *
+#from videomon_astream import *
 
 # Configuration
 CONFIGFILE = '/monroe/config'
@@ -40,6 +40,7 @@ CONTAINER_VERSION = 'v2.3'
 #v2.3   (CM) summary JSON field names, folder creation conditional on module skipping 04.2018
 #       (CM) result file naming conditional on module skipping (cnf_astream_algorithm), "fake"s converted to "local"s, last update string on top removed 04.2018
 #       (CM) QUIC option added to wrapper 04.2018
+#       (AS) added possibility to enable QUIC for Chrome + open webpage timestamp 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -339,9 +340,6 @@ def run_exp(meta_info, expconfig):
 
         #CM: constructing filename prefixes for YoMo and AStream, and output directory
         prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
-
-        print(cfg)
-
         prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
         prefix_astream=get_prefix(data=cfg, postfix="astream", tstamp=prefix_timestamp, interface=ifname)
 
@@ -443,7 +441,6 @@ def run_exp(meta_info, expconfig):
             if cfg['verbosity'] > 0:
                 print ('[Exception #2] Execution or parsing failed for error: {}').format(e)
 
-        print("DBG10")
         if not DEBUG:
             if cfg['verbosity'] > 1:
                 print('')
