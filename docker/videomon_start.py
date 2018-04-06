@@ -132,13 +132,10 @@ def get_filename(data, postfix, ending, tstamp, interface):
         ("_" + postfix) if postfix else "", ending)
 
 def get_prefix(data, postfix, tstamp, interface):
-    print("DBG:getprefix")
     if data['cnf_astream_skip']:
-        print("DBG:AStream skipped")
         return "{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], data['nodeid'], interface, tstamp,
             ("_" + postfix) if postfix else "")
     else:
-        print("DBG:AStream not skipped")
         return "{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
             ("_" + postfix) if postfix else "")
 
@@ -420,7 +417,7 @@ def run_exp(meta_info, expconfig):
                 #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'])
                 out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'],cfg['cnf_yomo_quic_enabled'])
 
-                if cfg['verbosity'] > 2:
+                if not (outyomo == "") and cfg['verbosity'] > 2:
                     print('')
                     print('-----------------------------')
                     print('DBG: YoMo output')
