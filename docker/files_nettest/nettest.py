@@ -48,7 +48,7 @@ EXPCONFIG = {
         "modem_metadata_topic": "MONROE.META.DEVICE.MODEM",
         "dataversion": 2,
         "dataid": "MONROE.EXP.NETTEST",
-        "nodeid": "fake.nodeid",
+        "nodeid": "local.nodeid",
         "meta_grace": 120,                              # Grace period to wait for interface metadata
         "exp_grace": 300,                               # Grace period before killing experiment
         "ifup_interval_check": 3,                       # Interval to check if interface is up
@@ -90,14 +90,14 @@ EXPCONFIG = {
 }
 
 def get_filename(data, postfix, ending, tstamp):
-    return "{}_{}_{}_{}{}.{}".format(data['nodeid'], data['dataid'], data['dataversion'], tstamp,
+    return "{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], meta_info[data['modeminterfacename']], time.strftime('%Y%m%d-%H%M%S',time.gmtime(tstamp)),
         ("_" + postfix) if postfix else "", ending)
 
-def save_output(data, msg, postfix=None, ending="json", tstamp=time.time(), outdir="/monroe/results/"):
+def save_output(data, msg, postfix=None, ending='json', tstamp=time.time(), outdir='/monroe/results/'):
     f = NamedTemporaryFile(mode='w+', delete=False, dir=outdir)
     f.write(msg)
     f.close()
-    outfile = path.join(outdir, get_filename(data, postfix, ending, tstamp))
+    outfile = os.path.join(outdir, get_filename(data, postfix, ending, tstamp))
     move_file(f.name, outfile)
 
 def move_file(f, t):
@@ -182,7 +182,7 @@ def run_exp(meta_info, expconfig):
         if cfg['verbosity'] > 2:
             print("Result: {}".format(msg))
         if not DEBUG:
-            save_output(data=cfg, msg=json.dumps(msg), tstamp=cfg['timestamp'], outdir=cfg['resultdir'])
+            save_output(data=cfg, msg=json.dumps(msg), postfix="summary", tstamp=cfg['timestamp'], outdir=cfg['resultdir'])
     except Exception as e:
         if cfg['verbosity'] > 0:
             print ("Execution or parsing failed for "
@@ -190,7 +190,6 @@ def run_exp(meta_info, expconfig):
                    "config : {}, "
                    "output : {}, "
                    "error: {}").format(cmd, cfg, output, e)
-
 
 def metadata(meta_ifinfo, ifname, expconfig):
     """Seperate process that attach to the ZeroMQ socket as a subscriber.
@@ -224,7 +223,7 @@ def metadata(meta_ifinfo, ifname, expconfig):
                     tstamp = msg['Timestamp']
                 if expconfig['verbosity'] > 2:
                     print(msg)
-                save_output(data=msg, msg=json.dumps(msg), tstamp=tstamp, outdir=expconfig['save_metadata_resultdir'])
+                save_output(data=msg, msg=json.dumps(msg), postfix="metadata", tstamp=tstamp, outdir=expconfig['save_metadata_resultdir'])
 
             if topic.startswith(expconfig['modem_metadata_topic']):
                 if (expconfig["modeminterfacename"] in msg and
@@ -238,8 +237,6 @@ def metadata(meta_ifinfo, ifname, expconfig):
                        ", {}").format(e, expconfig['guid'])
             pass
 
-
-# Helper functions
 def check_if(ifname):
     """Check if interface is up and have got an IP address."""
     return (ifname in netifaces.interfaces() and
@@ -282,14 +279,12 @@ def add_manual_metadata_information(info, ifname, expconfig):
     info["NWMCCMNC"] = "local"
     info["Timestamp"] = time.time()
 
-
 def create_meta_process(ifname, expconfig):
     meta_info = Manager().dict()
     process = Process(target=metadata,
                       args=(meta_info, ifname, expconfig, ))
     process.daemon = True
     return (meta_info, process)
-
 
 def create_exp_process(meta_info, expconfig):
     process = Process(target=run_exp, args=(meta_info, expconfig, ))
@@ -472,7 +467,7 @@ if __name__ == '__main__':
                 meta_process.terminate()
 
             if 'tar_additional_results' in cfg and cfg['tar_additional_results']:
-                with tarfile.open(path.join(cfg['resultdir'], get_filename(cfg, None, 'tar.gz', start_time_exp)), mode='w:gz') as tar:
+                with tarfile.open(path.join(cfg['resultdir'], get_filename(cfg, 'extra', 'tar.gz', start_time_exp)), mode='w:gz') as tar:
                     if temp_flows_json:
                         tar.add(temp_flows_json, arcname=get_filename(cfg, 'FLOWS', 'json.xz', start_time_exp), recursive=False)
                         os.remove(temp_flows_json)
