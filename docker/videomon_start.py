@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 # Authors: Cise Midoglu, Anika Schwind (based on a MONROE template)
-# Last Update: March 2018
 # License: GNU General Public License v3
 # Developed for use by the EU H2020 MONROE project
 
@@ -33,23 +32,26 @@ from videomon_astream import *
 # Configuration
 CONFIGFILE = '/monroe/config'
 DEBUG = False
-CONTAINER_VERSION = 'v2.1'
+CONTAINER_VERSION = 'v2.3'
 #CM: version information
 #v2.0   (CM) working container with new structure 03.2018
 #v2.1   (CM) metadata reading within container 03.2018
 #v2.2   (AS) Chrome, Firefox, HTTP logging enabled 04.2018
+#v2.3   (CM) summary JSON field names, folder creation conditional on module skipping 04.2018
+#       (CM) result file naming conditional on module skipping (cnf_astream_algorithm), "fake"s converted to "local"s, last update string on top removed 04.2018
+#       (CM) QUIC option added to wrapper 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
 # other processes are started
 EXPCONFIG = {
   # The following values are specific to the MONROE platform
-  "guid": "fake.guid",               # Should be overridden by scheduler
+  "guid": "local.guid",               # Should be overridden by scheduler
   "zmqport": "tcp://172.17.0.1:5556",
   "modem_metadata_topic": "MONROE.META.DEVICE.MODEM",
   "dataversion": 2,
   "dataid": "MONROE.EXP.VIDEO",
-  "nodeid": "fake.nodeid",
+  "nodeid": "local.nodeid",
   "meta_grace": 10,                              # Grace period to wait for interface metadata
   "exp_grace": 10000,                               # Grace period before killing experiment
   "ifup_interval_check": 3,                       # Interval to check if interface is up
@@ -84,9 +86,10 @@ EXPCONFIG = {
   "cnf_astream_segment_duration": 2,                  # Segment duration info for AStream
   "cnf_astream_server_host": "128.39.36.18",      # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
-  #"cnf_yomo_resolution": "1920,1080",
+  "cnf_yomo_browser": "chrome",
   "cnf_yomo_playback_duration_s": 0,              # Nominal duration for the YouTube video playback
   "cnf_yomo_bitrates_kbps": "144p:114.792,240p:250.618,360p:606.343,480p:1166.528,720p:2213.150,1080p:4018.795,1440p:9489.022,2160p:21322.799", #for D8YQn7o_AyA,
+  #"cnf_yomo_resolution": "1920,1080",
   #"180p:236.059,270p:461.195,360p:922.220,540p:1780.741,810p:3369.892,1080p:7823.352,1620p:15500.364",
   #"144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
   "cnf_wait_btw_algorithms_s": 20,                 # Time to wait between different algorithms
@@ -98,6 +101,7 @@ EXPCONFIG = {
   "cnf_q4": 90,
   "cnf_astream_skip": False,
   "cnf_yomo_skip": True,
+  "cnf_yomo_quic_enabled": True,
 
   "cnf_astream_out_fields": "res_astream_available_bitrates,\
 res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
@@ -127,8 +131,15 @@ def get_filename(data, postfix, ending, tstamp, interface):
         ("_" + postfix) if postfix else "", ending)
 
 def get_prefix(data, postfix, tstamp, interface):
-    return "{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
-        ("_" + postfix) if postfix else "")
+    print("DBG:getprefix")
+    if data['cnf_astream_skip']:
+        print("DBG:AStream skipped")
+        return "{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], data['nodeid'], interface, tstamp,
+            ("_" + postfix) if postfix else "")
+    else:
+        print("DBG:AStream not skipped")
+        return "{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
+            ("_" + postfix) if postfix else "")
 
 def save_output(data, msg, postfix=None, ending='json', tstamp=time.time(), outdir='/monroe/results/', interface='interface'):
     f = NamedTemporaryFile(mode='w+', delete=False, dir=outdir)
@@ -262,77 +273,91 @@ def run_exp(meta_info, expconfig):
             cfg['cnf_add_to_result'] = {}
 
         cfg['cnf_add_to_result'].update({
-            "Guid": cfg['guid'],
-            "DataId": cfg['dataid'],
-            "DataVersion": cfg['dataversion'],
-            "NodeId": cfg['nodeid'],
-            "Time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
-            "Interface": cfg['modeminterfacename'],
-            "cnf_astream_mpd": cfg['cnf_astream_mpd'],
-            "cnf_astream_server_host": cfg['cnf_astream_server_host'],
-            "cnf_astream_server_port": cfg['cnf_astream_server_port'],
-            "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
-            "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
-            "cnf_astream_segment_duration": cfg['cnf_astream_segment_duration'],
-            "cnf_astream_download": cfg['cnf_astream_download'],
+            "summary_containerversion": CONTAINER_VERSION,
+            "summary_dataid": cfg['dataid'],
+            "summary_dataversion": cfg['dataversion'],
+            "summary_debug": DEBUG,
+            "summary_guid": cfg['guid'],
+            "summary_interface": cfg['modeminterfacename'],
+            "summary_nodeid": cfg['nodeid'],
+            "summary_time": time.strftime('%Y%m%d-%H%M%S',cfg['timestamp']),
             "cnf_video_id": cfg['cnf_video_id'],
-            "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"],
             "cnf_q1": cfg['cnf_q1'],
             "cnf_q2": cfg['cnf_q2'],
             "cnf_q3": cfg['cnf_q3'],
             "cnf_q4": cfg['cnf_q4'],
-            "cnf_tag": cfg['cnf_tag'],
-            "ContainerVersion": CONTAINER_VERSION,
-            "DEBUG": DEBUG
+            "cnf_tag": cfg['cnf_tag']
             })
 
+        if not cfg['cnf_astream_skip']:
+            cfg['cnf_add_to_result'].update({
+                "cnf_astream_algorithm": cfg['cnf_astream_algorithm'],
+                "cnf_astream_download": cfg['cnf_astream_download'],
+                "cnf_astream_mpd": cfg['cnf_astream_mpd'],
+                "cnf_astream_segment_duration": cfg['cnf_astream_segment_duration'],
+                "cnf_astream_segment_limit": cfg['cnf_astream_segment_limit'],
+                "cnf_astream_server_host": cfg['cnf_astream_server_host'],
+                "cnf_astream_server_port": cfg['cnf_astream_server_port']
+                })
+
+        if not cfg['cnf_yomo_skip']:
+            cfg['cnf_add_to_result'].update({
+                "cnf_yomo_browser": cfg["cnf_yomo_browser"],
+                "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
+                })
+
         if 'ICCID' in meta_info:
-            cfg['cnf_add_to_result']['ICCID'] = meta_info['ICCID']
+            cfg['cnf_add_to_result']['summary_iccid'] = meta_info['ICCID']
         if 'Operator' in meta_info:
-            cfg['cnf_add_to_result']['OPERATOR'] = meta_info['Operator']
+            cfg['cnf_add_to_result']['summary_operator'] = meta_info['Operator']
         if 'IMSIMCCMNC' in meta_info:
-            cfg['cnf_add_to_result']['IMSIMCCMNC'] = meta_info['IMSIMCCMNC']
+            cfg['cnf_add_to_result']['summary_imsimccmnc'] = meta_info['IMSIMCCMNC']
         if 'NWMCCMNC' in meta_info:
-            cfg['cnf_add_to_result']['NWMCCMNC'] = meta_info['NWMCCMNC']
+            cfg['cnf_add_to_result']['summary_nwmccmnc'] = meta_info['NWMCCMNC']
         if 'CID' in meta_info:
-            cfg['cnf_add_to_result']['CID'] = meta_info['CID']
+            cfg['cnf_add_to_result']['summary_cid'] = meta_info['CID']
         if 'LAC' in meta_info:
-            cfg['cnf_add_to_result']['LAC'] = meta_info['LAC']
+            cfg['cnf_add_to_result']['summary_lac'] = meta_info['LAC']
         if 'DEVICEMODE' in meta_info:
-            cfg['cnf_add_to_result']['DEVICEMODE'] = meta_info['DEVICEMODE']
+            cfg['cnf_add_to_result']['summary_devicemode'] = meta_info['DEVICEMODE']
         if 'DEVICESUBMODE' in meta_info:
-            cfg['cnf_add_to_result']['DEVICESUBMODE'] = meta_info['DEVICESUBMODE']
+            cfg['cnf_add_to_result']['summary_devicesubmode'] = meta_info['DEVICESUBMODE']
         if 'LATITUDE' in meta_info:
-            cfg['cnf_add_to_result']['LATITUDE'] = meta_info['LATITUDE']
+            cfg['cnf_add_to_result']['summary_latitude'] = meta_info['LATITUDE']
         if 'LONGITUDE' in meta_info:
-            cfg['cnf_add_to_result']['LONGITUDE'] = meta_info['LONGITUDE']
+            cfg['cnf_add_to_result']['summary_longitude'] = meta_info['LONGITUDE']
+
+        ifname = meta_info[cfg['modeminterfacename']]
+        cfg['cnf_add_to_result']['summary_interface'] = ifname
 
         # Add metadata if requested
         if cfg['add_modem_metadata_to_result']:
-
             for k,v in meta_info.items():
                 cfg['cnf_add_to_result']['info_meta_modem_' + k] = v
 
         towrite_data = cfg['cnf_add_to_result']
-        ifname = meta_info[cfg['modeminterfacename']]
-        towrite_data['Interface']=ifname
 
         #CM: constructing filename prefixes for YoMo and AStream, and output directory
         prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
+
+        print(cfg)
+
         prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
         prefix_astream=get_prefix(data=cfg, postfix="astream", tstamp=prefix_timestamp, interface=ifname)
 
         #resultdir=cfg['resultdir']
         resultdir_videomon=cfg['resultdir']+"videomon/"
-
         resultdir_astream=resultdir_videomon+'astream/'
         resultdir_astream_video = resultdir_astream + 'videos/'
-        if not os.path.exists(resultdir_astream_video):
-            os.makedirs(resultdir_astream_video)
+        resultdir_yomo=resultdir_videomon+'yomo/'
 
-        resultdir_yomo=resultdir_videomon+'yomo'
-        if not os.path.exists(resultdir_yomo):
-            os.makedirs(resultdir_yomo)
+        if not cfg['cnf_astream_skip']:
+            if not os.path.exists(resultdir_astream_video):
+                os.makedirs(resultdir_astream_video)
+
+        if not cfg['cnf_yomo_skip']:
+            if not os.path.exists(resultdir_yomo):
+                os.makedirs(resultdir_yomo)
 
         if cfg['verbosity'] > 2:
             print('')
@@ -394,7 +419,8 @@ def run_exp(meta_info, expconfig):
                     print('-----------------------------')
 
                 #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_resolution'],cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],'chrome')
+                #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'])
+                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'],cfg['cnf_yomo_quic_enabled'])
 
                 if cfg['verbosity'] > 2:
                     print('')
@@ -417,6 +443,7 @@ def run_exp(meta_info, expconfig):
             if cfg['verbosity'] > 0:
                 print ('[Exception #2] Execution or parsing failed for error: {}').format(e)
 
+        print("DBG10")
         if not DEBUG:
             if cfg['verbosity'] > 1:
                 print('')
