@@ -42,6 +42,7 @@ CONTAINER_VERSION = 'v2.3'
 #       (CM) QUIC option added to wrapper 04.2018
 #       (AS) added possibility to enable QUIC for Chrome + open webpage timestamp 04.2018
 #v2.4   (CM) added Nettest run before YoMo 04.2018
+#       (CM) added traceroute after YoMo 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -103,28 +104,29 @@ EXPCONFIG = {
   "cnf_q4": 90,
   "cnf_astream_skip": False,
   "cnf_yomo_skip": True,
-  "cnf_yomo_quic_enabled": True,
-
-  "cnf_astream_out_fields": "res_astream_available_bitrates,\
-res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
-res_astream_bitrate_q1,res_astream_bitrate_q2,res_astream_bitrate_q3,res_astream_bitrate_q4,\
-res_astream_buffer_mean,res_astream_buffer_max,res_astream_buffer_min,\
-res_astream_buffer_q1,res_astream_buffer_q2,res_astream_buffer_q3,res_astream_buffer_q4,\
-res_astream_numstalls,\
-res_astream_durstalls_mean,res_astream_durstalls_max,res_astream_durstalls_min,\
-res_astream_durstalls_q1,res_astream_durstalls_q2,res_astream_durstalls_q3,res_astream_durstalls_q4,\
-res_astream_durstalls_total,\
-res_astream_numswitches_up,res_astream_numswitches_down",
-
-  "cnf_yomo_out_fields": "res_yomo_bitrate_mean,res_yomo_bitrate_max,res_yomo_bitrate_min,\
-res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
-res_yomo_numswitches_up,res_yomo_numswitches_down,\
-res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
-res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
-res_yomo_numstalls,\
-res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
-res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
-res_yomo_durstalls_total"
+  "cnf_yomo_quic_enabled": True
+#   ,
+#
+#   "cnf_astream_out_fields": "res_astream_available_bitrates,\
+# res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
+# res_astream_bitrate_q1,res_astream_bitrate_q2,res_astream_bitrate_q3,res_astream_bitrate_q4,\
+# res_astream_buffer_mean,res_astream_buffer_max,res_astream_buffer_min,\
+# res_astream_buffer_q1,res_astream_buffer_q2,res_astream_buffer_q3,res_astream_buffer_q4,\
+# res_astream_numstalls,\
+# res_astream_durstalls_mean,res_astream_durstalls_max,res_astream_durstalls_min,\
+# res_astream_durstalls_q1,res_astream_durstalls_q2,res_astream_durstalls_q3,res_astream_durstalls_q4,\
+# res_astream_durstalls_total,\
+# res_astream_numswitches_up,res_astream_numswitches_down",
+#
+#   "cnf_yomo_out_fields": "res_yomo_bitrate_mean,res_yomo_bitrate_max,res_yomo_bitrate_min,\
+# res_yomo_bitrate_q1,res_yomo_bitrate_q2,res_yomo_bitrate_q3,res_yomo_bitrate_q4,\
+# res_yomo_numswitches_up,res_yomo_numswitches_down,\
+# res_yomo_buffer_mean,res_yomo_buffer_max,res_yomo_buffer_min,\
+# res_yomo_buffer_q1,res_yomo_buffer_q2,res_yomo_buffer_q3,res_yomo_buffer_q4,\
+# res_yomo_numstalls,\
+# res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
+# res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
+# res_yomo_durstalls_total"
 
 }
 
@@ -416,7 +418,7 @@ def run_exp(meta_info, expconfig):
 
                 #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_resolution'],cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
                 #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'])
-                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'],cfg['cnf_yomo_quic_enabled'])
+                out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'],cfg['cnf_yomo_quic_enabled'])
 
                 if not (out_yomo == "") and cfg['verbosity'] > 2:
                     print('')
@@ -425,15 +427,15 @@ def run_exp(meta_info, expconfig):
                     print('-----------------------------')
                     print(out_yomo)
 
-                out_yomo_fields = out_yomo.split(",")
-                summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
+                    out_yomo_fields = out_yomo.split(",")
+                    summary_yomo_fields = cfg['cnf_yomo_out_fields'].split(",")
 
-                if len(out_yomo_fields) == len(summary_yomo_fields):
-                    for i in xrange(0,len(out_yomo_fields)-1):
-                        towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
-                else:
-                    for i in xrange(0,len(out_yomo_fields)-1):
-                        towrite_data[summary_yomo_fields[i]]="NA"
+                    if len(out_yomo_fields) == len(summary_yomo_fields):
+                        for i in xrange(0,len(out_yomo_fields)-1):
+                            towrite_data[summary_yomo_fields[i]]=out_yomo_fields[i]
+                    else:
+                        for i in xrange(0,len(out_yomo_fields)-1):
+                            towrite_data[summary_yomo_fields[i]]="NA"
 
         except Exception as e:
             if cfg['verbosity'] > 0:
