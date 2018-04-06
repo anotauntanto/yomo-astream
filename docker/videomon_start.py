@@ -28,6 +28,7 @@ import glob
 #sys.path.append('files_astream')
 from videomon_yomo import *
 #from videomon_astream import *
+from traceroute_parser import parse_traceroute
 
 # Configuration
 CONFIGFILE = '/monroe/config'
@@ -104,7 +105,9 @@ EXPCONFIG = {
   "cnf_q4": 90,
   "cnf_astream_skip": False,
   "cnf_yomo_skip": True,
-  "cnf_yomo_quic_enabled": True
+  "cnf_yomo_quic_enabled": True,
+  "cnf_run_traceroute": True,
+  "cnf_yomo_multiconfig": ""
 #   ,
 #
 #   "cnf_astream_out_fields": "res_astream_available_bitrates,\
@@ -131,12 +134,16 @@ EXPCONFIG = {
 }
 
 def get_filename(data, postfix, ending, tstamp, interface):
-    return "{}_{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
-        ("_" + postfix) if postfix else "", ending)
+    if data['cnf_astream_skip']:
+        return "{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], interface,  data['cnf_video_id'], tstamp,
+            ("_" + postfix) if postfix else "", ending)
+    else:
+        return "{}_{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], interface,  data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), tstamp,
+            ("_" + postfix) if postfix else "", ending)
 
 def get_prefix(data, postfix, tstamp, interface):
     if data['cnf_astream_skip']:
-        return "{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], data['nodeid'], interface, tstamp,
+        return "{}_{}_{}_{}_{}{}".format(data['dataid'], data['nodeid'], interface,  data['cnf_video_id'], tstamp,
             ("_" + postfix) if postfix else "")
     else:
         return "{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
@@ -261,6 +268,43 @@ def create_exp_process(meta_info, expconfig):
     process.daemon = True
     return process
 
+#TODO
+def traceroute(target, interface):
+
+    cmd = ['traceroute', '-A']
+    if (interface):
+        cmd.extend(['-i', interface])
+    cmd.append(target)
+
+    if EXPCONFIG['verbosity'] > 1:
+        print("traceroute started...")
+
+    time_start = time.time()
+    p = Popen(cmd, stdout=PIPE)
+    data = p.communicate()[0]
+    time_end = time.time()
+
+    if EXPCONFIG['verbosity'] > 1:
+        print("traceroute finished.")
+
+    if EXPCONFIG['verbosity'] > 2:
+        print("traceroute result: {}".format(data))
+
+    try:
+        traceroute = parse_traceroute(data)
+    except Exception as e:
+        traceroute = {'error': 'could not parse traceroute'}
+    if not traceroute:
+        traceroute = {'error': 'no traceroute output'}
+
+    traceroute['time_start'] = time_start
+    traceroute['time_end'] = time_end
+    traceroute['raw'] = data.decode('ascii', 'replace')
+
+    with NamedTemporaryFile(mode='w+', prefix='tmptraceroute', suffix='.json', delete=False) as f:
+        f.write(json.dumps(traceroute))
+        return f.name
+
 def run_exp(meta_info, expconfig):
     """Seperate process that runs the experiment and collect the ouput.
         Will abort if the interface goes down.
@@ -348,6 +392,7 @@ def run_exp(meta_info, expconfig):
         resultdir_astream=resultdir_videomon+'astream/'
         resultdir_astream_video = resultdir_astream + 'videos/'
         resultdir_yomo=resultdir_videomon+'yomo/'
+        resultdir_traceroute=resultdir_videomon+'traceroute/'
 
         if not cfg['cnf_astream_skip']:
             if not os.path.exists(resultdir_astream_video):
@@ -362,26 +407,15 @@ def run_exp(meta_info, expconfig):
             print('-----------------------------')
             print('DBG: Prefix for YoMo: '+prefix_yomo)
             print('DBG: Prefix for AStream: '+prefix_astream)
-            print('DBG: Temporary result directory: '+resultdir_videomon)
+            print('DBG: Temporary VideoMon directory: '+resultdir_videomon)
             print('-----------------------------')
-
-        #TODO for VideoMon starts here:
-
-        #PART 0 - Traceroutes
-        # Run traceroute + YoMo, then traceroute + AStream once
-        #print ("Running traceroute against YouTube server on interface: {}".format(cfg['modeminterfacename']))
-        #run_traceroute(<target1>)
-        #print ("Running YoMo with video: {}".format(cfg['cnf_video_id']))
-
-        #print ("Running traceroute against AStream server on interface: {}".format(cfg['modeminterfacename']))
-        #run_traceroute(<target2>)
-        #print ("Running AStream ({}) with video: {}".format(cfg['cnf_astream_algorithm'],cfg['cnf_video_id']))
 
         try:
 
             if not cfg['cnf_astream_skip']:
 
                 #PART I - AStream
+
                 if cfg['verbosity'] > 1:
                     print('\n-----------------------------')
                     print('DBG: Running AStream')
@@ -436,6 +470,28 @@ def run_exp(meta_info, expconfig):
                     else:
                         for i in xrange(0,len(out_yomo_fields)-1):
                             towrite_data[summary_yomo_fields[i]]="NA"
+
+            if cfg['cnf_run_traceroute']:
+
+                #PART III - Traceroute
+
+                if cfg['verbosity'] > 1:
+                    print('')
+                    print('-----------------------------')
+                    print('DBG: Running traceroute')
+                    print('-----------------------------')
+
+                traceroute_targets = None
+                target_set = set()
+                target_set.add(cfg['cnf_server_host'])
+
+                # for server in get_config_combinations(EXPCONFIG):
+                #     if 'cnf_server_host' in cfg:
+                #         target_set.add(cfg['cnf_server_host'])
+
+                traceroute_targets = {}
+                for target in target_set:
+                    traceroute_targets[target] = traceroute(target, ifname)
 
         except Exception as e:
             if cfg['verbosity'] > 0:

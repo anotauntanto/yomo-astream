@@ -8,6 +8,10 @@ echo "DBG: Running Nettest"
 echo "-----------------------------"
 python nettest.py
 
+echo "  "
+echo "-----------------------------"
+echo "DBG: Waiting between Nettest and VideoMon"
+echo "-----------------------------"
 wait 1
 
 echo "  "
