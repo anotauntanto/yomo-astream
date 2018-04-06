@@ -39,9 +39,7 @@ CONTAINER_VERSION = 'v2.3'
 #v2.2   (AS) Chrome, Firefox, HTTP logging enabled 04.2018
 #v2.3   (CM) summary JSON field names, folder creation conditional on module skipping 04.2018
 #       (CM) result file naming conditional on module skipping (cnf_astream_algorithm), "fake"s converted to "local"s, last update string on top removed 04.2018
-#       (CM) QUIC option added
-
-
+#       (CM) QUIC option added to wrapper 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
