@@ -41,6 +41,7 @@ CONTAINER_VERSION = 'v2.3'
 #       (CM) result file naming conditional on module skipping (cnf_astream_algorithm), "fake"s converted to "local"s, last update string on top removed 04.2018
 #       (CM) QUIC option added to wrapper 04.2018
 #       (AS) added possibility to enable QUIC for Chrome + open webpage timestamp 04.2018
+#v2.4   (CM) added Nettest run before YoMo 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -417,7 +418,7 @@ def run_exp(meta_info, expconfig):
                 #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'])
                 out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'],cfg['cnf_yomo_quic_enabled'])
 
-                if not (outyomo == "") and cfg['verbosity'] > 2:
+                if not (out_yomo == "") and cfg['verbosity'] > 2:
                     print('')
                     print('-----------------------------')
                     print('DBG: YoMo output')
