@@ -34,6 +34,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get install -y --force-yes --no
   && git clone $NETTEST_URL nettest-client \
   && cd nettest-client && ./autobuild.sh && make install && cd /opt/monroe && rm -rf nettest-client
 
+RUN apt-get install -y --force-yes --no-install-recommends --no-install-suggests \
+  iputils-ping
+
 # allow -i option to traceroute for non-root users:
 RUN setcap cap_net_raw+ep /usr/bin/traceroute.db
 

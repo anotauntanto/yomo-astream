@@ -29,11 +29,12 @@ import glob
 from videomon_yomo import *
 #from videomon_astream import *
 from traceroute_parser import parse_traceroute
+import pingparser
 
 # Configuration
 CONFIGFILE = '/monroe/config'
 DEBUG = False
-CONTAINER_VERSION = 'v2.3'
+CONTAINER_VERSION = 'v2.4'
 #CM: version information
 #v2.0   (CM) working container with new structure 03.2018
 #v2.1   (CM) metadata reading within container 03.2018
@@ -43,7 +44,7 @@ CONTAINER_VERSION = 'v2.3'
 #       (CM) QUIC option added to wrapper 04.2018
 #       (AS) added possibility to enable QUIC for Chrome + open webpage timestamp 04.2018
 #v2.4   (CM) added Nettest run before YoMo 04.2018
-#       (CM) added traceroute after YoMo 04.2018
+#       (CM) added ping+traceroute after YoMo 04.2018
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -107,6 +108,7 @@ EXPCONFIG = {
   "cnf_yomo_skip": True,
   "cnf_yomo_quic_enabled": True,
   "cnf_run_traceroute": True,
+  "cnf_ping_count": 3,
   "cnf_yomo_multiconfig": ""
 #   ,
 #
@@ -268,10 +270,10 @@ def create_exp_process(meta_info, expconfig):
     process.daemon = True
     return process
 
-#TODO
 def traceroute(target, interface):
 
     cmd = ['traceroute', '-A']
+
     if (interface):
         cmd.extend(['-i', interface])
     cmd.append(target)
@@ -300,13 +302,45 @@ def traceroute(target, interface):
     traceroute['time_start'] = time_start
     traceroute['time_end'] = time_end
     traceroute['raw'] = data.decode('ascii', 'replace')
+    return traceroute
 
-    with NamedTemporaryFile(mode='w+', prefix='tmptraceroute', suffix='.json', delete=False) as f:
-        f.write(json.dumps(traceroute))
-        return f.name
+def ping(target, num_pings, interface):
+
+    cmd = ['ping', '-c', str(num_pings)]
+
+    if (interface):
+        cmd.extend(['-I', interface])
+    cmd.append(target)
+
+    if EXPCONFIG['verbosity'] > 1:
+        print("running {} pings to {} ...".format(num_pings, target))
+
+    time_start = time.time()
+    p = Popen(cmd, stdout=PIPE)
+    data = p.communicate()[0]
+    time_end = time.time()
+
+    if EXPCONFIG['verbosity'] > 1:
+        print("ping finished.")
+
+    if EXPCONFIG['verbosity'] > 2:
+        print("ping result: {}".format(data))
+
+    try:
+        ping = pingparser.parse(data)
+    except Exception as e:
+        ping = {'error': 'could not parse ping'}
+    if not ping:
+        ping = {'error': 'no ping output'}
+
+    ping['time_start'] = time_start
+    ping['time_end'] = time_end
+    ping['raw'] = data.decode('ascii', 'replace')
+
+    return ping
 
 def run_exp(meta_info, expconfig):
-    """Seperate process that runs the experiment and collect the ouput.
+    """Seperate process that runs the experiment and collects the ouput.
         Will abort if the interface goes down.
     """
 
@@ -389,18 +423,22 @@ def run_exp(meta_info, expconfig):
 
         #resultdir=cfg['resultdir']
         resultdir_videomon=cfg['resultdir']+"videomon/"
-        resultdir_astream=resultdir_videomon+'astream/'
-        resultdir_astream_video = resultdir_astream + 'videos/'
-        resultdir_yomo=resultdir_videomon+'yomo/'
-        resultdir_traceroute=resultdir_videomon+'traceroute/'
 
         if not cfg['cnf_astream_skip']:
+            resultdir_astream=resultdir_videomon+'astream/'
+            resultdir_astream_video = resultdir_astream + 'videos/'
             if not os.path.exists(resultdir_astream_video):
                 os.makedirs(resultdir_astream_video)
 
         if not cfg['cnf_yomo_skip']:
+            resultdir_yomo=resultdir_videomon+'yomo/'
             if not os.path.exists(resultdir_yomo):
                 os.makedirs(resultdir_yomo)
+
+        if cfg['cnf_run_traceroute']:
+            resultdir_traceroute=resultdir_videomon+'traceroute/'
+            if not os.path.exists(resultdir_traceroute):
+                os.makedirs(resultdir_traceroute)
 
         if cfg['verbosity'] > 2:
             print('')
@@ -478,20 +516,25 @@ def run_exp(meta_info, expconfig):
                 if cfg['verbosity'] > 1:
                     print('')
                     print('-----------------------------')
-                    print('DBG: Running traceroute')
+                    print('DBG: Running ping+traceroute')
                     print('-----------------------------')
 
-                traceroute_targets = None
-                target_set = set()
-                target_set.add(cfg['cnf_server_host'])
+                # traceroute_targets = None
+                # target_set = set()
+                # target_set.add(cfg['cnf_server_host'])
 
-                # for server in get_config_combinations(EXPCONFIG):
-                #     if 'cnf_server_host' in cfg:
-                #         target_set.add(cfg['cnf_server_host'])
+                youtube_servers = [ "8.8.8.8" ] #TODO to be replaced by output of the HTTP log parser
 
-                traceroute_targets = {}
-                for target in target_set:
-                    traceroute_targets[target] = traceroute(target, ifname)
+                output = {}
+                for target in youtube_servers:
+                    output[target] = {}
+                    ping_result = ping(target, cfg['cnf_ping_count'], ifname)
+                    output[target]['ping'] = ping_result
+                    traceroute_result = traceroute(target, ifname)
+                    output[target]['traceroute'] = traceroute_result
+
+                save_output(data=cfg, msg=json.dumps(output), postfix="traceroute", tstamp=prefix_timestamp, outdir=resultdir_traceroute, interface=ifname)
+
 
         except Exception as e:
             if cfg['verbosity'] > 0:
@@ -509,17 +552,12 @@ def run_exp(meta_info, expconfig):
             save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
 
             if 'cnf_compress_additional_results' in cfg and cfg['cnf_compress_additional_results']:
-                files_to_compress=resultdir_videomon+"*"
+                #files_to_compress=resultdir_videomon+"*"
                 #with tarfile.open(os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), mode='w:gz') as tar:
                 #tar.add(cfg['resultdir'], recursive=False)
                 #tar.add(files_to_compress)
 
-                #print ('DBG1')
                 shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)), format='gztar', root_dir=resultdir_videomon,base_dir="./")
-                #print ('DBG2')
-                #print(os.listdir(resultdir_astream))
-                #print('DBG3')
-                #print(os.listdir(resultdir_videomon))
                 shutil.rmtree(resultdir_videomon)
 
                 #os.remove(cfg['resultdir'])
