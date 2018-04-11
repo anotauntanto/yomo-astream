@@ -45,6 +45,7 @@ CONTAINER_VERSION = 'v2.4'
 #       (AS) added possibility to enable QUIC for Chrome + open webpage timestamp 04.2018
 #v2.4   (CM) added Nettest run before YoMo 04.2018
 #       (CM) added ping+traceroute after YoMo 04.2018
+#v2.5	(AS) added time of requesting URL to first line of buffer output
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any

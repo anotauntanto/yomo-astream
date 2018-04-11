@@ -133,7 +133,7 @@ def run_yomo(ytid, duration, prefix, bitrates,interf,resultDir,quant1,quant2,qua
 		out = browser.execute_script('return document.getElementById("outC").innerHTML;')
 		outE = browser.execute_script('return document.getElementById("outE").innerHTML;')
 		with open(resultDir + prefix + '_buffer.txt', 'w') as f:
-			f.write(str(timeStartVideo)+ '\n' )			
+			f.write(str(timeStartVideo)+ '#0#0#0\n' )			
 			f.write(out.encode("UTF-8"))
 		with open(resultDir + prefix + '_events.txt', 'w') as f:
 			f.write(outE.encode("UTF-8"))
