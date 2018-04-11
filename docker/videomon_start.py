@@ -34,7 +34,7 @@ import pingparser
 # Configuration
 CONFIGFILE = '/monroe/config'
 DEBUG = False
-CONTAINER_VERSION = 'v2.4'
+CONTAINER_VERSION = 'v2.5'
 #CM: version information
 #v2.0   (CM) working container with new structure 03.2018
 #v2.1   (CM) metadata reading within container 03.2018
@@ -46,6 +46,8 @@ CONTAINER_VERSION = 'v2.4'
 #v2.4   (CM) added Nettest run before YoMo 04.2018
 #       (CM) added ping+traceroute after YoMo 04.2018
 #v2.5	(AS) added time of requesting URL to first line of buffer output
+#		(CM) added multi-config functionality 04.2018
+
 
 # Default values (overwritable from the scheduler)
 # Can only be updated from the main thread and ONLY before any
@@ -82,19 +84,23 @@ EXPCONFIG = {
                                   "wlan0"],       # Manual metadata on these IF
   "timestamp": time.gmtime(),
 
-  # These values are specific for this experiment
+  # Following values are specific for this experiment
   "cnf_tag": "None",
   "cnf_video_id": "D8YQn7o_AyA", #"7kAy3b9hvWM", # (YouTube) ID of the video to be streamed #"pJ8HFgPKiZE",#"7kAy3b9hvWM",#"QS7lN7giXXc",
   "cnf_astream_algorithm": "Basic",               # Playback type in astream
   "cnf_astream_mpd": "http://www-itec.uni-klu.ac.at/ftp/datasets/mmsys12/BigBuckBunny/bunny_2s/BigBuckBunny_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
   "cnf_astream_download": False,                   # Download option for AStream
   "cnf_astream_segment_limit": 5,                  # Segment limit option for AStream
-  "cnf_astream_segment_duration": 2,                  # Segment duration info for AStream
+  "cnf_astream_segment_duration": 2,               # Segment duration info for AStream
   "cnf_astream_server_host": "128.39.36.18",      # REQUIRED PARAMETER; Host/IP to connect to for astream
   "cnf_astream_server_port": "12345",              # REQUIRED PARAMETER; Port to connect to for astream
+  "cnf_astream_skip": False,
   "cnf_yomo_browser": "chrome",
   "cnf_yomo_playback_duration_s": 0,              # Nominal duration for the YouTube video playback
   "cnf_yomo_bitrates_kbps": "144p:114.792,240p:250.618,360p:606.343,480p:1166.528,720p:2213.150,1080p:4018.795,1440p:9489.022,2160p:21322.799", #for D8YQn7o_AyA,
+  "cnf_yomo_skip": True,
+  "cnf_yomo_quic_enabled": True,
+  "cnf_run_traceroute": True,
   #"cnf_yomo_resolution": "1920,1080",
   #"180p:236.059,270p:461.195,360p:922.220,540p:1780.741,810p:3369.892,1080p:7823.352,1620p:15500.364",
   #"144p:110.139,240p:246.425,360p:262.750,480p:529.500,720p:1036.744,1080p:2793.167",             	   # REQUIRED PARAMETER; list (as String) with all available qualities and their bitrates in KBs
@@ -105,14 +111,10 @@ EXPCONFIG = {
   "cnf_q2": 50,
   "cnf_q3": 75,
   "cnf_q4": 90,
-  "cnf_astream_skip": False,
-  "cnf_yomo_skip": True,
-  "cnf_yomo_quic_enabled": True,
-  "cnf_run_traceroute": True,
   "cnf_ping_count": 3,
-  "cnf_yomo_multiconfig": ""
+  "cnf_yomo_multiconfig": [ {"cnf_yomo_browser": "firefox", "cnf_yomo_quic_enabled": False}, {"cnf_yomo_browser": "chrome", "cnf_yomo_quic_enabled": True}, {"cnf_yomo_browser": "chrome", "cnf_yomo_quic_enabled": False}]
+
 #   ,
-#
 #   "cnf_astream_out_fields": "res_astream_available_bitrates,\
 # res_astream_bitrate_mean,res_astream_bitrate_max,res_astream_bitrate_min,\
 # res_astream_bitrate_q1,res_astream_bitrate_q2,res_astream_bitrate_q3,res_astream_bitrate_q4,\
@@ -133,23 +135,34 @@ EXPCONFIG = {
 # res_yomo_durstalls_mean,res_yomo_durstalls_max,res_yomo_durstalls_min,\
 # res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
 # res_yomo_durstalls_total"
-
 }
 
 def get_filename(data, postfix, ending, tstamp, interface):
+
+    if data['cnf_yomo_quic_enabled']:
+        quic = "quic"
+    else:
+        quic = "noquic"
+
     if data['cnf_astream_skip']:
-        return "{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], interface,  data['cnf_video_id'], tstamp,
+        return "{}_{}_{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], interface, tstamp, data['cnf_video_id'], data['cnf_yomo_browser'], quic,
             ("_" + postfix) if postfix else "", ending)
     else:
-        return "{}_{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], interface,  data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), tstamp,
+        return "{}_{}_{}_{}_{}_{}_{}_{}{}.{}".format(data['dataid'], data['nodeid'], interface, tstamp, data['cnf_video_id'],  data['cnf_yomo_browser'], quic, str.lower(data['cnf_astream_algorithm']),
             ("_" + postfix) if postfix else "", ending)
 
 def get_prefix(data, postfix, tstamp, interface):
+
+    if data['cnf_yomo_quic_enabled']:
+        quic = "quic"
+    else:
+        quic = "noquic"
+
     if data['cnf_astream_skip']:
-        return "{}_{}_{}_{}_{}{}".format(data['dataid'], data['nodeid'], interface,  data['cnf_video_id'], tstamp,
+        return "{}_{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['nodeid'], interface, tstamp, data['cnf_video_id'], data['cnf_yomo_browser'], quic,
             ("_" + postfix) if postfix else "")
     else:
-        return "{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['cnf_video_id'], str.lower(data['cnf_astream_algorithm']), data['nodeid'], interface, tstamp,
+        return "{}_{}_{}_{}_{}_{}_{}_{}{}".format(data['dataid'], data['nodeid'], interface, tstamp, data['cnf_video_id'],  data['cnf_yomo_browser'], quic, str.lower(data['cnf_astream_algorithm']),
             ("_" + postfix) if postfix else "")
 
 def save_output(data, msg, postfix=None, ending='json', tstamp=time.time(), outdir='/monroe/results/', interface='interface'):
@@ -340,6 +353,32 @@ def ping(target, num_pings, interface):
 
     return ping
 
+def get_config_combinations(config):
+
+    if 'cnf_yomo_multiconfig' not in config or not config['cnf_yomo_multiconfig']:
+        yield config.copy()
+        return
+
+    multiconfig = config['cnf_yomo_multiconfig']
+    if type(multiconfig[0]) is list:
+        configurations = []
+        for tuples in list(product(*multiconfig)):
+            combination = {}
+            for tuple in tuples:
+                combination.update(tuple)
+            configurations.append(combination)
+    else:
+        configurations = multiconfig
+
+    # do_rand = config['cnf_yomo_multiconfig_randomize'] if 'cnf_yomo_multiconfig_randomize' in config else False
+    # if do_rand:
+    #     shuffle(cfgs)
+
+    for configuration in configurations:
+        out = config.copy()
+        out.update(configuration)
+        yield out
+
 def run_exp(meta_info, expconfig):
     """Seperate process that runs the experiment and collects the ouput.
         Will abort if the interface goes down.
@@ -383,6 +422,7 @@ def run_exp(meta_info, expconfig):
         if not cfg['cnf_yomo_skip']:
             cfg['cnf_add_to_result'].update({
                 "cnf_yomo_browser": cfg["cnf_yomo_browser"],
+                "cnf_yomo_quic_enabled": cfg["cnf_yomo_quic_enabled"],
                 "cnf_yomo_playback_duration_s": cfg["cnf_yomo_playback_duration_s"]
                 })
 
@@ -417,11 +457,6 @@ def run_exp(meta_info, expconfig):
 
         towrite_data = cfg['cnf_add_to_result']
 
-        #CM: constructing filename prefixes for YoMo and AStream, and output directory
-        prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
-        prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
-        prefix_astream=get_prefix(data=cfg, postfix="astream", tstamp=prefix_timestamp, interface=ifname)
-
         #resultdir=cfg['resultdir']
         resultdir_videomon=cfg['resultdir']+"videomon/"
 
@@ -441,13 +476,30 @@ def run_exp(meta_info, expconfig):
             if not os.path.exists(resultdir_traceroute):
                 os.makedirs(resultdir_traceroute)
 
+        #CM: constructing filename prefixes for YoMo and AStream, and output directory
+        #prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',time.gmtime())
+        prefix_timestamp=time.strftime('%Y%m%d-%H%M%S',cfg['timestamp'])
+        prefix_yomo=get_prefix(data=cfg, postfix="yomo", tstamp=prefix_timestamp, interface=ifname)
+        prefix_astream=get_prefix(data=cfg, postfix="astream", tstamp=prefix_timestamp, interface=ifname)
+
         if cfg['verbosity'] > 2:
-            print('')
-            print('-----------------------------')
-            print('DBG: Prefix for YoMo: '+prefix_yomo)
-            print('DBG: Prefix for AStream: '+prefix_astream)
-            print('DBG: Temporary VideoMon directory: '+resultdir_videomon)
-            print('-----------------------------')
+            if cfg['cnf_astream_skip']:
+                print('')
+                print('-----------------------------')
+                print('DBG: Starting new VideoMon run')
+                print('-----------------------------')
+                print('DBG: Prefix for YoMo: '+prefix_yomo)
+                print('DBG: Temporary VideoMon directory: '+resultdir_videomon)
+                print('-----------------------------')
+            else:
+                print('')
+                print('-----------------------------')
+                print('DBG: Starting new VideoMon run')
+                print('-----------------------------')
+                print('DBG: Prefix for YoMo: '+prefix_yomo)
+                print('DBG: Prefix for AStream: '+prefix_astream)
+                print('DBG: Temporary VideoMon directory: '+resultdir_videomon)
+                print('-----------------------------')
 
         try:
 
@@ -489,8 +541,6 @@ def run_exp(meta_info, expconfig):
                     print('DBG: Running YoMo')
                     print('-----------------------------')
 
-                #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_resolution'],cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_videomon,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'])
-                #out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'])
                 out_yomo=run_yomo(cfg['cnf_video_id'],cfg['cnf_yomo_playback_duration_s'],prefix_yomo,cfg['cnf_yomo_bitrates_kbps'],ifname,resultdir_yomo,cfg['cnf_q1'],cfg['cnf_q2'],cfg['cnf_q3'],cfg['cnf_q4'],cfg['cnf_yomo_browser'],cfg['cnf_yomo_quic_enabled'])
 
                 if not (out_yomo == "") and cfg['verbosity'] > 2:
@@ -524,7 +574,7 @@ def run_exp(meta_info, expconfig):
                 # target_set = set()
                 # target_set.add(cfg['cnf_server_host'])
 
-                youtube_servers = [ "8.8.8.8" ] #TODO to be replaced by output of the HTTP log parser
+                youtube_servers = [ "77.88.8.8", "77.88.8.1", "8.8.8.8" ] #TODO to be replaced by output of the HTTP log parser
 
                 output = {}
                 for target in youtube_servers:
@@ -549,26 +599,11 @@ def run_exp(meta_info, expconfig):
                 print('-----------------------------')
 
             #CM: compressing all outputs other than summary JSON
-
             save_output(data=cfg, msg=json.dumps(towrite_data), postfix="summary", tstamp=prefix_timestamp, outdir=cfg['resultdir'], interface=ifname)
 
             if 'cnf_compress_additional_results' in cfg and cfg['cnf_compress_additional_results']:
-                #files_to_compress=resultdir_videomon+"*"
-                #with tarfile.open(os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="tar.gz", tstamp=prefix_timestamp, interface=ifname)), mode='w:gz') as tar:
-                #tar.add(cfg['resultdir'], recursive=False)
-                #tar.add(files_to_compress)
-
                 shutil.make_archive(base_name=os.path.join(cfg['resultdir'], get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)), format='gztar', root_dir=resultdir_videomon,base_dir="./")
                 shutil.rmtree(resultdir_videomon)
-
-                #os.remove(cfg['resultdir'])
-                # foldername_zip=get_filename(data=cfg, postfix=None, ending="extra", tstamp=prefix_timestamp, interface=ifname)
-                # basename_zip=os.path.join(resultdir,foldername_zip)
-                # #print(foldername_zip)
-                # shutil.move(resultdir_astream,basename_zip)
-                # shutil.make_archive(base_name=basename_zip, format='gztar', root_dir=resultdir, base_dir=foldername_zip)#"./")
-                # shutil.rmtree(basename_zip)
-
 
     except Exception as e:
         if cfg['verbosity'] > 0:
@@ -700,33 +735,35 @@ if __name__ == '__main__':
         if output_interface==str(ifname):
                 print("Source interface is set to " + str(ifname))
 
-        if EXPCONFIG['verbosity'] > 1:
-            print("Starting experiment")
+        for cfg in get_config_combinations(EXPCONFIG):
 
-        # Create an experiment process and start it
-        start_time_exp=time.time()
-        exp_process = create_exp_process(meta_info, EXPCONFIG)
-        exp_process.start()
-
-        while (time.time() - start_time_exp < exp_grace and
-               exp_process.is_alive()):
-            # Here we could add code to handle interfaces going up or down
-            # Similar to what exist in the ping experiment
-            # However, for now we just abort if we loose the interface
-
-            if not check_if(ifname):
-                if EXPCONFIG['verbosity'] > 0:
-                    print("Interface went down during an experiment")
-                break
-            elapsed_exp = time.time() - start_time_exp
             if EXPCONFIG['verbosity'] > 1:
-                print("Running Experiment for {} s".format(elapsed_exp))
-            time.sleep(ifup_interval_check)
+                print("Starting experiment")
 
-        if exp_process.is_alive():
-            exp_process.terminate()
-        if meta_process.is_alive():
-            meta_process.terminate()
+            # Create an experiment process and start it
+            start_time_exp=time.time()
+            exp_process = create_exp_process(meta_info, cfg)
+            exp_process.start()
+
+            while (time.time() - start_time_exp < exp_grace and
+                   exp_process.is_alive()):
+                # Here we could add code to handle interfaces going up or down
+                # Similar to what exist in the ping experiment
+                # However, for now we just abort if we loose the interface
+
+                if not check_if(ifname):
+                    if cfg['verbosity'] > 0:
+                        print("Interface went down during an experiment")
+                    break
+                elapsed_exp = time.time() - start_time_exp
+                if cfg['verbosity'] > 1:
+                    print("Running Experiment for {} s".format(elapsed_exp))
+                time.sleep(ifup_interval_check)
+
+            if exp_process.is_alive():
+                exp_process.terminate()
+            if meta_process.is_alive():
+                meta_process.terminate()
 
         elapsed = time.time() - start_time
         if EXPCONFIG['verbosity'] > 1:
