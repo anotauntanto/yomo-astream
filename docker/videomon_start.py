@@ -35,18 +35,20 @@ import pingparser
 CONFIGFILE = '/monroe/config'
 DEBUG = False
 CONTAINER_VERSION = 'v2.5'
-#CM: version information
+
+# Version information
 #v2.0   (CM) working container with new structure 03.2018
 #v2.1   (CM) metadata reading within container 03.2018
 #v2.2   (AS) Chrome, Firefox, HTTP logging enabled 04.2018
-#v2.3   (CM) summary JSON field names, folder creation conditional on module skipping 04.2018
-#       (CM) result file naming conditional on module skipping (cnf_astream_algorithm), "fake"s converted to "local"s, last update string on top removed 04.2018
-#       (CM) QUIC option added to wrapper 04.2018
+#v2.3   (CM) summary JSON field names, folder creation conditional on module skipping
+#       (CM) result file naming conditional on module skipping (cnf_astream_algorithm), "fake"s converted to "local"s, last update string on top removed
+#       (CM) QUIC option added to wrapper
 #       (AS) added possibility to enable QUIC for Chrome + open webpage timestamp 04.2018
-#v2.4   (CM) added Nettest run before YoMo 04.2018
+#v2.4   (CM) added Nettest run before YoMo
 #       (CM) added ping+traceroute after YoMo 04.2018
 #v2.5	(AS) added time of requesting URL to first line of buffer output
-#		(CM) added multi-config functionality 04.2018
+#		(CM) added multi-config functionality
+#       (CM) added HTTP log parsing for ping+traceroute 04.2018
 
 
 # Default values (overwritable from the scheduler)
@@ -70,7 +72,7 @@ EXPCONFIG = {
   "save_metadata_topic": "MONROE.META",
   "save_metadata_resultdir": None,                # set to a dir to enable saving of metadata
   "add_modem_metadata_to_result": True,          # set to True to add one captured modem metadata to videomon result
-  "enabled_interfaces":["op0","op1","eth0"],
+  "enabled_interfaces":["op0","op1","op2","eth0"],
   "disabled_interfaces": ["lo",
                           "metadata",
                           "eth2",
@@ -136,6 +138,19 @@ EXPCONFIG = {
 # res_yomo_durstalls_q1,res_yomo_durstalls_q2,res_yomo_durstalls_q3,res_yomo_durstalls_q4,\
 # res_yomo_durstalls_total"
 }
+
+def get_yt_servers(logfile):
+    print("DBG1")
+    #sed -re 's/^.*(https?:[^\.]+\.googlevideo.com)\/.*$/\1/g’ <LOGFILE> | sort | uniq
+    cmd = "sed -re 's/^.*(https?:[^\.]+\.googlevideo.com)\/.*$/\1/g’ " + logfile + " | sort | uniq"
+    # print(cmd)
+    # #subprocess.call([cmd], shell=True)
+    p = Popen(cmd, stdout=PIPE)
+    print("DBG2")
+    data = p.communicate()[0]
+    print("DBG3")
+    return data
+
 
 def get_filename(data, postfix, ending, tstamp, interface):
 
@@ -570,21 +585,23 @@ def run_exp(meta_info, expconfig):
                     print('DBG: Running ping+traceroute')
                     print('-----------------------------')
 
-                # traceroute_targets = None
-                # target_set = set()
-                # target_set.add(cfg['cnf_server_host'])
+                #TODO
+                #CM: parsing HTTP log from YoMo to populate youtube_servers
+                logfile = glob.glob(resultdir_yomo+'*httpLog*.json')
+                youtube_servers = get_yt_servers(logfile)
+                print(youtube_servers)
 
-                youtube_servers = [ "77.88.8.8", "77.88.8.1", "8.8.8.8" ] #TODO to be replaced by output of the HTTP log parser
-
-                output = {}
-                for target in youtube_servers:
-                    output[target] = {}
-                    ping_result = ping(target, cfg['cnf_ping_count'], ifname)
-                    output[target]['ping'] = ping_result
-                    traceroute_result = traceroute(target, ifname)
-                    output[target]['traceroute'] = traceroute_result
-
-                save_output(data=cfg, msg=json.dumps(output), postfix="traceroute", tstamp=prefix_timestamp, outdir=resultdir_traceroute, interface=ifname)
+                # youtube_servers = [ "77.88.8.8", "77.88.8.1", "8.8.8.8" ] #TODO to be replaced by output of the HTTP log parser
+                #
+                # output = {}
+                # for target in youtube_servers:
+                #     output[target] = {}
+                #     ping_result = ping(target, cfg['cnf_ping_count'], ifname)
+                #     output[target]['ping'] = ping_result
+                #     traceroute_result = traceroute(target, ifname)
+                #     output[target]['traceroute'] = traceroute_result
+                #
+                # save_output(data=cfg, msg=json.dumps(output), postfix="traceroute", tstamp=prefix_timestamp, outdir=resultdir_traceroute, interface=ifname)
 
 
         except Exception as e:
