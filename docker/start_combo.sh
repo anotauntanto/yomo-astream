@@ -12,7 +12,7 @@ echo "  "
 echo "-----------------------------"
 echo "DBG: Waiting between Nettest and VideoMon"
 echo "-----------------------------"
-wait 1
+sleep 1
 
 echo "  "
 echo "-----------------------------"
