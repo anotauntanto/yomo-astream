@@ -139,10 +139,11 @@ EXPCONFIG = {
 # res_yomo_durstalls_total"
 }
 
+#FW: regular expression that searches for xyz.googlevideo.com server URLs for traceroute/ping content servers
+# returns a list with URLs
 def get_yt_servers(logfiles):
     data=[]
     for logfile in logfiles:
-        print("DBG1")
         # go for: ..."https://r2---sn-4g5ednss.googlevideo.com/generate_204"...
         #         ...ders":["Host: r2---sn-4g5e6nlk.googlevideo.com","...
         #         ...":"r2---sn-4g5e6nlk.googlevideo.com:443","is...
@@ -151,8 +152,7 @@ def get_yt_servers(logfiles):
         cmd = "grep googlevideo.com " + logfile + " | sed -re 's/^.*[ \"\/]([^\. :\"]+\.googlevideo\.com).*$/\\1/g' | sort | uniq"
         p = Popen(cmd, shell=True, stdout=PIPE)
         data = data + list(filter(None,p.communicate()[0].decode("utf-8").split("\n")))
-        data = [ el for el in data if "*." not in el ]  # remove *.googlevideo.com entries
-        print("DBG2")
+        data = [ el for el in data if "*." not in el ]  # remove entries like *.googlevideo.com with wildcards
     return data
 
 
