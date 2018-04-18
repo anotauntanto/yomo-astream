@@ -7,6 +7,10 @@ CONTAINER=yomo-astream
 DOCKERFILE=Dockerfile
 
 NO_CACHE=--no-cache
+RM="--rm=true"
+
+[[ $@ == **local** ]] && RM="" && NO_CACHE=""
 
 docker pull monroe/base
-docker build $NO_CACHE --rm=true -f ${DOCKERFILE} -t ${CONTAINER} . && echo "Finished building ${CONTAINER}"
+docker pull monroe/base:web
+docker build $NO_CACHE $RM -f ${DOCKERFILE} -t ${CONTAINER} . && echo "Finished building ${CONTAINER}"
