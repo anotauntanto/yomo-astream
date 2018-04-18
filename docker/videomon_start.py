@@ -139,16 +139,20 @@ EXPCONFIG = {
 # res_yomo_durstalls_total"
 }
 
-def get_yt_servers(logfile):
-    print("DBG1")
-    #sed -re 's/^.*(https?:[^\.]+\.googlevideo.com)\/.*$/\1/g’ <LOGFILE> | sort | uniq
-    cmd = "sed -re 's/^.*(https?:[^\.]+\.googlevideo.com)\/.*$/\1/g’ " + logfile + " | sort | uniq"
-    # print(cmd)
-    # #subprocess.call([cmd], shell=True)
-    p = Popen(cmd, stdout=PIPE)
-    print("DBG2")
-    data = p.communicate()[0]
-    print("DBG3")
+def get_yt_servers(logfiles):
+    data=[]
+    for logfile in logfiles:
+        print("DBG1")
+        # go for: ..."https://r2---sn-4g5ednss.googlevideo.com/generate_204"...
+        #         ...ders":["Host: r2---sn-4g5e6nlk.googlevideo.com","...
+        #         ...":"r2---sn-4g5e6nlk.googlevideo.com:443","is...
+        #         .../nsHttp   Host: r2---sn-4g5e6nlk.googlevideo.com...
+        #sed -re 's/^.*(https?:[^\.]+\.googlevideo.com)\/.*$/\1/g’ <LOGFILE> | sort | uniq
+        cmd = "grep googlevideo.com " + logfile + " | sed -re 's/^.*[ \"\/]([^\. :\"]+\.googlevideo\.com).*$/\\1/g' | sort | uniq"
+        p = Popen(cmd, shell=True, stdout=PIPE)
+        data = data + list(filter(None,p.communicate()[0].decode("utf-8").split("\n")))
+        data = [ el for el in data if "*." not in el ]  # remove *.googlevideo.com entries
+        print("DBG2")
     return data
 
 
@@ -587,7 +591,7 @@ def run_exp(meta_info, expconfig):
 
                 #TODO
                 #CM: parsing HTTP log from YoMo to populate youtube_servers
-                logfile = glob.glob(resultdir_yomo+'*httpLog*.json')
+                logfile = glob.glob(resultdir_yomo+'*httpLog*.*')
                 youtube_servers = get_yt_servers(logfile)
                 print(youtube_servers)
 
@@ -690,7 +694,7 @@ if __name__ == '__main__':
         meta_process.start()
 
         if EXPCONFIG['verbosity'] > 1:
-            print("Starting Experiment Run on if : {}".format(ifname))
+            print("Starting experiment run on if : {}".format(ifname))
 
         # On these Interfaces we do net get modem information so we hack
         # in the required values by hand whcih will immeditaly terminate
@@ -729,6 +733,8 @@ if __name__ == '__main__':
                          print("Time limit exceeded for command1")
         #gw_ip="192.168."+str(meta_info["IPAddress"].split(".")[2])+".1"
         gw_ip="undefined"
+        print(netifaces.gateways()[netifaces.AF_INET])
+        print(netifaces.gateways())
         for g in netifaces.gateways()[netifaces.AF_INET]:
             if g[1] == ifname:
                 gw_ip = g[0]
