@@ -11,6 +11,5 @@ RM="--rm=true"
 
 [[ $@ == **local** ]] && RM="" && NO_CACHE=""
 
-docker pull monroe/base
-docker pull monroe/base:web
+[[ $@ == **local** ]] || docker pull monroe/base:web
 docker build $NO_CACHE $RM -f ${DOCKERFILE} -t ${CONTAINER} . && echo "Finished building ${CONTAINER}"
