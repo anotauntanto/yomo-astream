@@ -48,7 +48,9 @@ CONTAINER_VERSION = 'v2.5'
 #       (CM) added ping+traceroute after YoMo 04.2018
 #v2.5	(AS) added time of requesting URL to first line of buffer output
 #		(CM) added multi-config functionality
-#       (CM) added HTTP log parsing for ping+traceroute 04.2018
+#       (CM) added HTTP log parsing for ping+traceroute
+#       (FW) run script, build script local option
+#       (FW) fixed log parser function 04.2018
 
 
 # Default values (overwritable from the scheduler)
@@ -597,15 +599,15 @@ def run_exp(meta_info, expconfig):
 
                 # youtube_servers = [ "77.88.8.8", "77.88.8.1", "8.8.8.8" ] #TODO to be replaced by output of the HTTP log parser
                 #
-                # output = {}
-                # for target in youtube_servers:
-                #     output[target] = {}
-                #     ping_result = ping(target, cfg['cnf_ping_count'], ifname)
-                #     output[target]['ping'] = ping_result
-                #     traceroute_result = traceroute(target, ifname)
-                #     output[target]['traceroute'] = traceroute_result
-                #
-                # save_output(data=cfg, msg=json.dumps(output), postfix="traceroute", tstamp=prefix_timestamp, outdir=resultdir_traceroute, interface=ifname)
+                output = {}
+                for target in youtube_servers:
+                    output[target] = {}
+                    ping_result = ping(target, cfg['cnf_ping_count'], ifname)
+                    output[target]['ping'] = ping_result
+                    traceroute_result = traceroute(target, ifname)
+                    output[target]['traceroute'] = traceroute_result
+
+                save_output(data=cfg, msg=json.dumps(output), postfix="traceroute", tstamp=prefix_timestamp, outdir=resultdir_traceroute, interface=ifname)
 
 
         except Exception as e:
